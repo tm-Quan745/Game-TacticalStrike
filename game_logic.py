@@ -203,21 +203,21 @@ class MazeTowerDefenseGame:
             self.ui.start_button.config(text="Làn Sóng Đang Diễn Ra...")
     
     def spawn_enemies(self):
-        num_enemies = 5 + self.current_wave * 2
+        num_enemies = 3 + self.current_wave * 3  # Fewer base enemies but scales faster
         base_health = 50 + self.current_wave * 10
-        base_speed = 50 + min(100, self.current_wave * 10)  # Increase base speed significantly
+        base_speed = 50 + min(100, self.current_wave * 10)
         
         for i in range(num_enemies):
             enemy_type = "normal"
-            if self.current_wave >= 3:
+            if self.current_wave >= 2:  # Start special enemies earlier
                 r = random.random()
-                if r < 0.2:
+                if r < 0.15:  # 15% chance for tank
                     enemy_type = "tank"
-                elif r < 0.4:
+                elif r < 0.35:  # 20% chance for fast
                     enemy_type = "fast"
             
             enemy = Enemy.create(enemy_type, self.enemy_types[enemy_type],
-                               base_health, base_speed, i * 30, self.cell_size)
+                               base_health, base_speed, i * 15, self.cell_size)
             self.enemies.append(enemy)
     
     def game_over(self):
