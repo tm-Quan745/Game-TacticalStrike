@@ -51,7 +51,7 @@ class Tower:
                 'y': tower_center_y,
                 'target_x': enemy['x'],
                 'target_y': enemy['y'],
-                'speed': 5,
+                'speed': 300,  # Increase projectile speed significantly
                 'damage': tower['damage'],
                 'tower_type': tower['type']
             }
@@ -59,7 +59,7 @@ class Tower:
             projectiles.append(projectile)
             return True
         else:
-            tower['last_fire'] -= 1 * dt
+            tower['last_fire'] = max(0, tower['last_fire'] - dt)  # Use dt directly for consistent timing
             return False
 
 class Enemy:
@@ -111,36 +111,34 @@ class Enemy:
         if enemy['frozen']:
             speed *= 0.5  # 50% slower when frozen
         
-        # Update enemy position to move towards target
+        # Calculate movement vector
         dx = enemy['target_x'] - enemy['x']
         dy = enemy['target_y'] - enemy['y']
         dist = math.sqrt(dx*dx + dy*dy)
         
-        if dist < speed:
+        # Move towards target using normalized direction and speed
+        if dist <= (speed * dt):  # Check if we would reach or pass the target
             # Reached target, move to next path point
             enemy['x'] = enemy['target_x']
             enemy['y'] = enemy['target_y']
             
-            path_idx = enemy['path_index']
-            if path_idx < len(paths) - 1:
-                # There are still multiple paths to choose from
-                # TODO: Implement logic to choose a path if needed
-                pass
-            
-            # Move along current path
-            if paths and path_idx < len(paths):
-                path = paths[path_idx]
-                pos = enemy['path_position'] + 1
+            # Since we're using a single path, just move along it
+            if not paths or len(paths) == 0:
+                return False
                 
-                if pos < len(path):
-                    # Move to next point on current path
-                    enemy['path_position'] = pos
-                    next_pos = path[pos]
-                    enemy['target_x'] = next_pos[0] * cell_size + cell_size/2
-                    enemy['target_y'] = next_pos[1] * cell_size + cell_size/2
-                    return True
-                else:
-                    return False  # Reached end of path
+            current_path = paths[0]  # Use the primary path
+            next_position = enemy['path_position'] + 1
+            
+            if next_position < len(current_path):
+                # Move to next point on path
+                enemy['path_position'] = next_position
+                next_point = current_path[next_position]
+                enemy['target_x'] = next_point[0] * cell_size + cell_size/2
+                enemy['target_y'] = next_point[1] * cell_size + cell_size/2
+                return True
+            else:
+                # Reached the end of path
+                return False
         else:
             # Move towards target
             enemy['x'] += (dx / dist) * speed * dt

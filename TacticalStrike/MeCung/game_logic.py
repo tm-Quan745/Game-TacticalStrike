@@ -34,7 +34,7 @@ class MazeTowerDefenseGame:
                 "cost": 20,
                 "damage": 10,
                 "range": 3,
-                "fire_rate": 20,
+                "fire_rate": 1.0,  # Shoot every second
                 "color": "#3498db",
                 "description": "Bắn kẻ địch từ xa với tốc độ cao"
             },
@@ -43,7 +43,7 @@ class MazeTowerDefenseGame:
                 "cost": 30,
                 "damage": 5,
                 "range": 2,
-                "fire_rate": 30,
+                "fire_rate": 1.5,  # Slower than shooter tower
                 "color": "#00bcd4",
                 "description": "Làm chậm và gây sát thương nhẹ"
             },
@@ -52,7 +52,7 @@ class MazeTowerDefenseGame:
                 "cost": 50,
                 "damage": 30,
                 "range": 5,
-                "fire_rate": 50,
+                "fire_rate": 2.0,  # Slowest fire rate but highest damage
                 "color": "#9b59b6",
                 "description": "Gây sát thương lớn với tầm xa"
             }
@@ -115,16 +115,23 @@ class MazeTowerDefenseGame:
             self.ui.update_info_labels()
     
     def find_paths(self):
-        self.paths = [find_path(self.maze, self.grid_size, self.selected_algo.get())]
+        # Find a single path using the selected algorithm
+        path = find_path(self.maze, self.grid_size, self.selected_algo.get())
+        if not path:
+            return
+            
+        self.paths = [path]
         
         # Update path for all enemies
         for enemy in self.enemies:
+            # Reset path tracking
             enemy['path_index'] = 0
             enemy['path_position'] = 0
-            if self.paths and len(self.paths) > 0:
-                next_pos = self.paths[0][0]
-                enemy['target_x'] = next_pos[0] * self.cell_size + self.cell_size/2
-                enemy['target_y'] = next_pos[1] * self.cell_size + self.cell_size/2
+            
+            # Set initial target position
+            next_pos = self.paths[0][0]
+            enemy['target_x'] = next_pos[0] * self.cell_size + self.cell_size/2
+            enemy['target_y'] = next_pos[1] * self.cell_size + self.cell_size/2
     
     def game_loop(self):
         if not hasattr(self, 'last_update'):
@@ -198,7 +205,7 @@ class MazeTowerDefenseGame:
     def spawn_enemies(self):
         num_enemies = 5 + self.current_wave * 2
         base_health = 50 + self.current_wave * 10
-        base_speed = 0.1 + min(0.3, self.current_wave * 0.02)
+        base_speed = 50 + min(100, self.current_wave * 10)  # Increase base speed significantly
         
         for i in range(num_enemies):
             enemy_type = "normal"
@@ -239,9 +246,20 @@ class MazeTowerDefenseGame:
                 (grid_x, grid_y) != (0, 0) and 
                 (grid_x, grid_y) != (self.grid_size-1, self.grid_size-1)):
                 
+                # Can only build towers before wave starts
+                if self.wave_in_progress and self.build_mode in self.tower_types:
+                    self.ui.status_label.config(text="Không thể xây tháp khi làn sóng đang diễn ra!")
+                    return
+                
                 # Build/delete tower based on build_mode
                 if hasattr(self, 'build_mode'):
                     if self.build_mode in self.tower_types and self.money >= self.tower_types[self.build_mode]["cost"]:
+                        # Check if path still exists after tower placement
+                        test_maze = [row[:] for row in self.maze]
+                        test_maze[grid_y][grid_x] = 2
+                        if not find_path(test_maze, self.grid_size, self.selected_algo.get()):
+                            self.ui.status_label.config(text="Không thể xây tháp ở đây vì sẽ chặn hết đường đi!")
+                            return
                         self.add_tower(grid_x, grid_y, self.build_mode)
                         self.money -= self.tower_types[self.build_mode]["cost"]
                         self.play_sound("build")
@@ -297,8 +315,15 @@ class MazeTowerDefenseGame:
                         tower_info = self.tower_types[tower_type]
                         status = f"{tower_info['name']} | DMG: {tower['damage']} | RNG: {tower['range']}"
                         self.ui.status_label.config(text=status)
+                        tower['show_range'] = True
+                        # Redraw to show range
+                        self.ui.draw_maze()
                         break
             else:
+                # Clear previous tower ranges
+                for tower in self.towers:
+                    tower['show_range'] = False
+                
                 if hasattr(self, 'build_mode') and self.build_mode in self.tower_types:
                     tower = self.tower_types[self.build_mode]
                     self.ui.status_label.config(text=f"Xây {tower['name']} tại ({grid_x}, {grid_y})")

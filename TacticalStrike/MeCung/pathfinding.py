@@ -21,8 +21,8 @@ def bfs_find_path(maze, grid_size):
             x, y = current[0] + dx, current[1] + dy
             next_pos = (x, y)
             
-            if (0 <= x < grid_size and 0 <= y < grid_size 
-                and maze[y][x] != 1 and next_pos not in visited):
+            if (0 <= x < grid_size and 0 <= y < grid_size
+                and maze[y][x] == 0 and next_pos not in visited):  # Only allow empty cells
                 queue.append(path + [next_pos])
                 visited.add(next_pos)
     
@@ -47,8 +47,8 @@ def dfs_find_path(maze, grid_size):
             x, y = current[0] + dx, current[1] + dy
             next_pos = (x, y)
             
-            if (0 <= x < grid_size and 0 <= y < grid_size 
-                and maze[y][x] != 1 and next_pos not in visited):
+            if (0 <= x < grid_size and 0 <= y < grid_size
+                and maze[y][x] == 0 and next_pos not in visited):  # Only allow empty cells
                 stack.append(path + [next_pos])
                 visited.add(next_pos)
     
@@ -79,8 +79,8 @@ def dijkstra_find_path(maze, grid_size):
             x, y = current[0] + dx, current[1] + dy
             next_pos = (x, y)
             
-            if (0 <= x < grid_size and 0 <= y < grid_size 
-                and maze[y][x] != 1 and next_pos not in visited):
+            if (0 <= x < grid_size and 0 <= y < grid_size
+                and maze[y][x] == 0 and next_pos not in visited):  # Only allow empty cells
                 next_cost = cost + 1
                 heapq.heappush(queue, (next_cost, next_pos, path + [next_pos]))
     
@@ -114,8 +114,8 @@ def astar_find_path(maze, grid_size):
             x, y = current[0] + dx, current[1] + dy
             next_pos = (x, y)
             
-            if (0 <= x < grid_size and 0 <= y < grid_size 
-                and maze[y][x] != 1 and next_pos not in visited):
+            if (0 <= x < grid_size and 0 <= y < grid_size
+                and maze[y][x] == 0 and next_pos not in visited):  # Only allow empty cells
                 next_g = g_score + 1
                 next_f = next_g + heuristic(next_pos, goal)
                 heapq.heappush(queue, (next_f, next_g, next_pos, path + [next_pos]))
