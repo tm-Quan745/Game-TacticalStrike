@@ -1,12 +1,171 @@
 import tkinter as tk
 from tkinter import ttk
+from PIL import Image, ImageTk
+from entities import Enemy  # Import the Enemy class
+import os  # Import os for handling file paths
+
+class Soldier:
+    def __init__(self, canvas, x, y, sprites, direction="walk_right", max_health=100):
+        self.canvas = canvas
+        self.x, self.y = x, y
+        self.sprites = sprites
+        self.frames = self.sprites.get(direction, [])
+        if not self.frames:
+            raise ValueError(f"Error: No frames found for direction '{direction}'. Check sprite loading.")
+        self.current_frame = 0
+        self.tk_image = self.frames[0]
+        self.image = self.canvas.create_image(x, y, image=self.tk_image, anchor="nw")
+        self.animation_speed = 100  # Animation speed in ms
+        self.direction = direction
+        self.max_health = max_health
+        self.current_health = max_health
+        self.animation_id = None  # Store the after() ID
+
+        # Health bar
+        self.health_bar_bg = self.canvas.create_rectangle(
+            x, y - 10, x + 36, y - 5, fill="red", outline=""
+        )
+        self.health_bar_fg = self.canvas.create_rectangle(
+            x, y - 10, x + 36, y - 5, fill="green", outline=""
+        )
+
+        self.update_animation()
+
+    def update_animation(self):
+        """Update the animation frame without affecting position."""
+        if not self.canvas.winfo_exists():
+            return  # Exit if the canvas no longer exists
+        self.current_frame = (self.current_frame + 1) % len(self.frames)
+        self.tk_image = self.frames[self.current_frame]
+        self.canvas.itemconfig(self.image, image=self.tk_image)
+        self.animation_id = self.canvas.after(self.animation_speed, self.update_animation)
+
+    def stop_animation(self):
+        """Stop the animation by canceling the after() call."""
+        if self.animation_id:
+            self.canvas.after_cancel(self.animation_id)
+            self.animation_id = None
+
+    def __del__(self):
+        """Ensure animation is stopped when the object is destroyed."""
+        self.stop_animation()
+
+    def move(self, dx, dy):
+        """Move the Soldier and update its position on the canvas."""
+        # Calculate new position
+        new_x = self.x + dx
+        new_y = self.y + dy
+
+        # Constrain new position within canvas bounds
+        canvas_width = self.canvas.winfo_width()
+        canvas_height = self.canvas.winfo_height()
+        if new_x < 0:
+            new_x = 0
+        elif new_x > canvas_width - 36:  # Assuming sprite width is 36
+            new_x = canvas_width - 36
+
+        if new_y < 0:
+            new_y = 0
+        elif new_y > canvas_height - 36:  # Assuming sprite height is 36
+
+            new_y = canvas_height - 36
+
+        # Automatically update direction based on movement
+        if dx > 0:
+            self.set_direction("walk_right")
+        elif dx < 0:
+            self.set_direction("walk_left")
+        elif dy != 0:
+            self.set_direction("walk_up")
+
+        # Update position
+        dx = new_x - self.x
+        dy = new_y - self.y
+        self.x = new_x
+        self.y = new_y
+
+        # Move the canvas elements
+        self.canvas.move(self.image, dx, dy)
+        self.canvas.move(self.health_bar_bg, dx, dy)
+        self.canvas.move(self.health_bar_fg, dx, dy)
+
+        # Trigger canvas redraw
+        self.canvas.update()
+
+    def set_direction(self, direction):
+        """Set the direction and update the animation frames."""
+        if self.direction != direction:
+            self.direction = direction
+            self.frames = self.sprites[direction]
+            self.current_frame = 0  # Reset animation frame to avoid glitches
+
+    def update_health(self, health):
+        """Update the health bar position and size."""
+        self.current_health = max(0, min(health, self.max_health))  # Clamp health
+        health_ratio = self.current_health / self.max_health
+        new_width = 36 * health_ratio
+
+        # Update the position and size of the health bar
+        self.canvas.coords(
+            self.health_bar_bg,
+            self.x, self.y - 10,
+            self.x + 36, self.y - 5
+        )
+        self.canvas.coords(
+            self.health_bar_fg,
+            self.x, self.y - 10,
+            self.x + new_width, self.y - 5
+        )
+
+    def smooth_move(self, dx, dy):
+        """Smoothly move the Soldier in small steps."""
+        steps = 10
+        step_x, step_y = dx / steps, dy / steps
+
+        def move_step(i=0):
+            if i < steps:
+                self.move(step_x, step_y)
+                self.canvas.after(30, lambda: move_step(i + 1))  # 30ms per step
+
+        move_step()
 
 class GameUI:
     def __init__(self, root, game):
         self.root = root
         self.game = game
+        self.sprites = {}
+        self.start_button = None  # Initialize start_button as None
         self.setup_ui()
-    
+        self.load_sprites()
+
+    def load_sprites(self):
+        """Load sprite sheets and split them into frames."""
+        def load_sprites(sheet_path, num_frames):
+            try:
+                sheet = Image.open(sheet_path)
+                frame_width = sheet.width // num_frames
+                frame_height = sheet.height
+                return [ImageTk.PhotoImage(sheet.crop((i * frame_width, 0, (i + 1) * frame_width, frame_height))) for i in range(num_frames)]
+            except FileNotFoundError:
+                print(f"Error: Sprite file not found: {sheet_path}")
+                # Create a placeholder sprite (solid color)
+                placeholder = Image.new("RGBA", (36, 36), (255, 0, 0, 255))  # Red square
+                return [ImageTk.PhotoImage(placeholder) for _ in range(num_frames)]
+
+        NUM_FRAMES = 4
+        sprite_dir = os.path.join(os.getcwd(), "sprites")  # Assuming sprites are in a "sprites" folder
+        self.sprites = {
+            "walk_right": load_sprites(os.path.join(sprite_dir, "Linh_move.png"), NUM_FRAMES),
+            "walk_left": load_sprites(os.path.join(sprite_dir, "Linh_moveleft.png"), NUM_FRAMES),
+            "walk_up": load_sprites(os.path.join(sprite_dir, "Linh_moveupdown.png"), NUM_FRAMES),
+            "shoot_right": load_sprites(os.path.join(sprite_dir, "Linh_shoot.png"), NUM_FRAMES),
+            "shoot_left": load_sprites(os.path.join(sprite_dir, "Linh_shootleft.png"), NUM_FRAMES),
+        }
+        # Validate that all sprites are loaded
+        for key, frames in self.sprites.items():
+            if not frames:
+                print(f"Warning: No frames loaded for '{key}'. Using placeholder sprites.")
+
     def setup_ui(self):
         # Main frame
         main_frame = ttk.Frame(self.root)
@@ -140,8 +299,9 @@ class GameUI:
         self.score_label.config(text=f"Điểm: {self.game.score}")
     
     def draw_maze(self):
-        """Draw the current state of the maze, including towers, enemies, and projectiles."""
-        self.canvas.delete("all")
+        """Draw the current state of the maze, including static elements."""
+        # Clear only static elements (e.g., maze grid)
+        self.canvas.delete("maze")  # Use a tag to delete only maze-related elements
         
         # Draw grid cells
         for y in range(self.game.grid_size):
@@ -150,23 +310,23 @@ class GameUI:
                     self.canvas.create_rectangle(
                         x * self.game.cell_size, y * self.game.cell_size,
                         (x + 1) * self.game.cell_size, (y + 1) * self.game.cell_size,
-                        fill="#8d6e63", outline="#5d4037"
+                        fill="#8d6e63", outline="#5d4037", tags="maze"
                     )
                 else:  # Path
                     self.canvas.create_rectangle(
                         x * self.game.cell_size, y * self.game.cell_size,
                         (x + 1) * self.game.cell_size, (y + 1) * self.game.cell_size,
-                        fill="#e8f5e9", outline="#c8e6c9"
+                        fill="#e8f5e9", outline="#c8e6c9", tags="maze"
                     )
         
         # Mark start and end points
         self.canvas.create_rectangle(
             0, 0, self.game.cell_size, self.game.cell_size,
-            fill="#4caf50", outline="#2e7d32"
+            fill="#4caf50", outline="#2e7d32", tags="maze"
         )
         self.canvas.create_text(
             self.game.cell_size/2, self.game.cell_size/2,
-            text="S", fill="white", font=("Arial", 12, "bold")
+            text="S", fill="white", font=("Arial", 12, "bold"), tags="maze"
         )
         
         self.canvas.create_rectangle(
@@ -174,12 +334,12 @@ class GameUI:
             (self.game.grid_size-1) * self.game.cell_size,
             self.game.grid_size * self.game.cell_size,
             self.game.grid_size * self.game.cell_size,
-            fill="#f44336", outline="#c62828"
+            fill="#f44336", outline="#c62828", tags="maze"
         )
         self.canvas.create_text(
             (self.game.grid_size-0.5) * self.game.cell_size,
             (self.game.grid_size-0.5) * self.game.cell_size,
-            text="E", fill="white", font=("Arial", 12, "bold")
+            text="E", fill="white", font=("Arial", 12, "bold"), tags="maze"
         )
         
         # Draw towers
@@ -217,46 +377,8 @@ class GameUI:
                     outline=color, dash=(4, 2)
                 )
         
-        # Draw enemies
-        for enemy in self.game.enemies:
-            if enemy['spawn_delay'] <= 0:
-                enemy_type = enemy['type']
-                enemy_info = self.game.enemy_types[enemy_type]
-                color = enemy_info["color"]
-                
-                # Enemy body
-                self.canvas.create_oval(
-                    enemy['x'] - 10, enemy['y'] - 10,
-                    enemy['x'] + 10, enemy['y'] + 10,
-                    fill=color, outline="black"
-                )
-                
-                # Health bar
-                health_ratio = enemy['health'] / enemy['max_health']
-                bar_width = 20
-                bar_height = 4
-                self.canvas.create_rectangle(
-                    enemy['x'] - bar_width/2,
-                    enemy['y'] - 15,
-                    enemy['x'] + bar_width/2,
-                    enemy['y'] - 15 + bar_height,
-                    fill="red"
-                )
-                self.canvas.create_rectangle(
-                    enemy['x'] - bar_width/2,
-                    enemy['y'] - 15,
-                    enemy['x'] - bar_width/2 + bar_width * health_ratio,
-                    enemy['y'] - 15 + bar_height,
-                    fill="green"
-                )
-                
-                # Show damage text
-                if enemy['damage_text_timer'] > 0:
-                    self.canvas.create_text(
-                        enemy['x'], enemy['y'] - 20,
-                        text=str(enemy['damage_text']),
-                        fill="red", font=("Arial", 10, "bold")
-                    )
+        # Draw enemies after all static elements
+        self.draw_enemies()
         
         # Draw projectiles
         for proj in self.game.projectiles:
@@ -265,3 +387,17 @@ class GameUI:
                 proj['x'] + 3, proj['y'] + 3,
                 fill="yellow", outline="orange"
             )
+
+    def draw_enemies(self):
+        """Draw enemies with animations."""
+        for enemy in self.game.enemies:
+            if enemy['canvas_image'] is None:
+                # Initialize the canvas image for the enemy
+                enemy['canvas_image'] = self.canvas.create_image(
+                    enemy['x'], enemy['y'], image=enemy['animation_frames'][enemy['direction']][0], anchor="nw"
+                )
+            else:
+                # Update the position of the enemy
+                self.canvas.coords(enemy['canvas_image'], enemy['x'], enemy['y'])
+            # Update the animation frame
+            Enemy.update_animation(enemy, self.canvas)

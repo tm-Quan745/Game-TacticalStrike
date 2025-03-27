@@ -1070,8 +1070,35 @@ class MazeTowerDefenseGame:
         # Example: self.sounds[sound_name].play()
         pass
 
-# Run the game
+class Game:
+    def __init__(self):
+        self.root = tk.Tk()
+        self.root.title("Maze Tower Defense")
+        self.root.geometry("800x600")
+        self.debug_mode = False  # Enable debug mode for performance logging
+
+        # Lazy initialization of the game
+        self.game_instance = None
+
+    def start_game(self):
+        """Start the game."""
+        if self.debug_mode:
+            print("Initializing game...")
+
+        # Initialize the game instance
+        self.game_instance = MazeTowerDefenseGame(self.root)
+
+        if self.debug_mode:
+            print("Game initialized successfully.")
+
+        # Start the Tkinter main loop
+        self.root.mainloop()
+
+    def toggle_debug_mode(self):
+        """Toggle debug mode."""
+        self.debug_mode = not self.debug_mode
+        print(f"Debug mode {'enabled' if self.debug_mode else 'disabled'}.")
+
 if __name__ == "__main__":
-    root = tk.Tk()
-    game = MazeTowerDefenseGame(root)
-    root.mainloop()
+    game = Game()
+    game.start_game()
