@@ -1,57 +1,58 @@
 # Các Thuật Toán Tìm Đường Trong Game Tower Defense
 
-## 1. Thuật Toán BFS (Breadth-First Search)
-### Trạng thái ban đầu:
-- Điểm xuất phát: (0, 0)
-- Điểm đích: (grid_size-1, grid_size-1)
-- Hàng đợi (queue) chứa đường đi ban đầu [start]
-- Tập visited chỉ chứa điểm xuất phát
-- Tìm đường theo chiều rộng, khám phá tất cả các ô liền kề trước khi đi sâu hơn
+## Cấu Trúc Project
 
-### Trạng thái đích:
-- Tìm được đường đi ngắn nhất từ điểm xuất phát đến đích
-- Trả về danh sách các tọa độ tạo thành đường đi
-- Nếu không tìm được đường đi, trả về None
+### Thư Mục algorithms/
+Chứa các file cài đặt thuật toán và tài liệu chi tiết:
 
-## 2. Thuật Toán DFS (Depth-First Search)
-### Trạng thái ban đầu:
-- Điểm xuất phát: (0, 0)
-- Điểm đích: (grid_size-1, grid_size-1)
-- Ngăn xếp (stack) chứa đường đi ban đầu [start]
-- Tập visited chỉ chứa điểm xuất phát
-- Tìm đường theo chiều sâu, ưu tiên đi sâu vào một hướng trước
+1. **BFS (Breadth-First Search)**
+   - Code: `algorithms/bfs.py`
+   - Tài liệu: `algorithms/bfs_readme.md`
+   - Tìm đường ngắn nhất bằng cách duyệt theo chiều rộng
 
-### Trạng thái đích:
-- Tìm được một đường đi từ điểm xuất phát đến đích (không nhất thiết là ngắn nhất)
-- Trả về danh sách các tọa độ tạo thành đường đi
-- Nếu không tìm được đường đi, trả về None
+2. **DFS (Depth-First Search)**
+   - Code: `algorithms/dfs.py`
+   - Tài liệu: `algorithms/dfs_readme.md`
+   - Tìm đường bằng cách duyệt theo chiều sâu
 
-## 3. Thuật Toán Dijkstra
-### Trạng thái ban đầu:
-- Điểm xuất phát: (0, 0)
-- Điểm đích: (grid_size-1, grid_size-1)
-- Hàng đợi ưu tiên chứa (chi_phí=0, vị_trí=start, đường_đi=[start])
-- Tập visited rỗng
-- Chi phí di chuyển giữa các ô liền kề là 1
+3. **Dijkstra**
+   - Code: `algorithms/dijkstra.py`
+   - Tài liệu: `algorithms/dijkstra_readme.md`
+   - Tìm đường ngắn nhất dựa trên chi phí di chuyển
 
-### Trạng thái đích:
-- Tìm được đường đi ngắn nhất từ điểm xuất phát đến đích dựa trên chi phí
-- Trả về danh sách các tọa độ tạo thành đường đi có tổng chi phí nhỏ nhất
-- Nếu không tìm được đường đi, trả về None
+4. **A* (A-Star)**
+   - Code: `algorithms/astar.py`
+   - Tài liệu: `algorithms/astar_readme.md`
+   - Tìm đường thông minh kết hợp chi phí và heuristic
 
-## 4. Thuật Toán A* (A-Star)
-### Trạng thái ban đầu:
-- Điểm xuất phát: (0, 0)
-- Điểm đích: (grid_size-1, grid_size-1)
-- Hàng đợi ưu tiên chứa (f_score, g_score=0, vị_trí=start, đường_đi=[start])
-- f_score = g_score + heuristic (Manhattan distance)
-- Tập visited rỗng
-- Sử dụng heuristic là khoảng cách Manhattan đến đích
+### File Chính
+- `pathfinding.py`: File điều phối các thuật toán
+- `game_logic.py`: Xử lý logic game chính
+- `ui.py`: Giao diện người dùng
+- `entities.py`: Định nghĩa các đối tượng trong game
+- `maze_generator.py`: Tạo mê cung ngẫu nhiên
 
-### Trạng thái đích:
-- Tìm được đường đi tốt nhất từ điểm xuất phát đến đích
-- Trả về danh sách các tọa độ tạo thành đường đi tối ưu
-- Nếu không tìm được đường đi, trả về None
+## Tổng Quan Thuật Toán
+
+### 1. BFS (Breadth-First Search)
+- Đặc điểm: Tìm đường theo chiều rộng
+- Độ phức tạp thời gian: O(V + E)
+- Chi tiết: Xem `algorithms/bfs_readme.md`
+
+### 2. DFS (Depth-First Search)
+- Đặc điểm: Tìm đường theo chiều sâu
+- Độ phức tạp không gian: O(H)
+- Chi tiết: Xem `algorithms/dfs_readme.md`
+
+### 3. Dijkstra
+- Đặc điểm: Tìm đường dựa trên chi phí
+- Độ phức tạp: O((V + E) * log V)
+- Chi tiết: Xem `algorithms/dijkstra_readme.md`
+
+### 4. A* (A-Star)
+- Đặc điểm: Kết hợp chi phí và heuristic
+- Hiệu quả nhất trong thực tế
+- Chi tiết: Xem `algorithms/astar_readme.md`
 
 ## Đặc Điểm Chung
 - Tất cả các thuật toán đều:
@@ -60,45 +61,16 @@
   * Không đi qua các ô đã đi qua (tránh lặp vô hạn)
   * Kiểm tra giới hạn của mê cung (0 ≤ x, y < grid_size)
 
-## Chi Phí Thuật Toán
-
-### 1. BFS (Breadth-First Search)
-- **Độ phức tạp thời gian:** O(V + E)
-  * V: số lượng ô trong mê cung (grid_size * grid_size)
-  * E: số lượng cạnh có thể đi được giữa các ô
-- **Độ phức tạp không gian:** O(V)
-  * Cần lưu trữ hàng đợi và tập visited
-- **Ưu điểm:** Tìm được đường đi ngắn nhất
-- **Nhược điểm:** Tốn nhiều bộ nhớ do phải lưu tất cả các trạng thái
-
-### 2. DFS (Depth-First Search)
-- **Độ phức tạp thời gian:** O(V + E)
-  * V: số lượng ô trong mê cung
-  * E: số lượng cạnh có thể đi được
-- **Độ phức tạp không gian:** O(H)
-  * H: độ sâu tối đa của đường đi
-  * Thường tốt hơn BFS về mặt bộ nhớ
-- **Ưu điểm:** Tốn ít bộ nhớ hơn BFS
-- **Nhược điểm:** Không đảm bảo tìm được đường đi ngắn nhất
-
-### 3. Dijkstra
-- **Độ phức tạp thời gian:** O((V + E) * log V)
-  * Do sử dụng hàng đợi ưu tiên (priority queue)
-- **Độ phức tạp không gian:** O(V)
-  * Cần lưu trữ khoảng cách và đường đi
-- **Ưu điểm:** Tìm được đường đi ngắn nhất, xử lý tốt với chi phí khác nhau
-- **Nhược điểm:** Chậm hơn BFS khi tất cả các cạnh có chi phí bằng nhau
-
-### 4. A* (A-Star)
-- **Độ phức tạp thời gian:** O((V + E) * log V)
-  * Tương tự Dijkstra nhưng thường nhanh hơn trong thực tế
-- **Độ phức tạp không gian:** O(V)
-  * Cần lưu trữ f_score, g_score và đường đi
-- **Ưu điểm:** Thường tìm đường nhanh hơn Dijkstra nhờ heuristic
-- **Nhược điểm:** Phụ thuộc vào chất lượng của hàm heuristic
+## Thực Hiện
+- Mỗi thuật toán được tách thành file riêng để dễ quản lý
+- File readme riêng giải thích chi tiết từng thuật toán
+- Có thể dễ dàng thêm thuật toán mới vào hệ thống
+- Cấu trúc module hóa giúp dễ bảo trì và nâng cấp
 
 ## So Sánh Chi Phí
 1. **Chi phí thấp nhất:** DFS (về mặt bộ nhớ)
-2. **Cân bằng nhất:** BFS (thời gian và bộ nhớ tương đối, đảm bảo đường đi ngắn nhất)
-3. **Thông minh nhất:** A* (hiệu quả trong thực tế nhờ heuristic)
-4. **Linh hoạt nhất:** Dijkstra (tốt cho mê cung có chi phí di chuyển khác nhau)
+2. **Cân bằng nhất:** BFS (đảm bảo đường đi ngắn nhất)
+3. **Thông minh nhất:** A* (hiệu quả trong thực tế)
+4. **Linh hoạt nhất:** Dijkstra (tốt với chi phí khác nhau)
+
+Chi tiết về cài đặt, ưu nhược điểm và độ phức tạp của mỗi thuật toán có thể được tìm thấy trong file readme tương ứng trong thư mục algorithms/.
