@@ -1,4 +1,5 @@
 import math
+from PIL import Image, ImageTk
 
 class Tower:
     @staticmethod
@@ -64,12 +65,13 @@ class Tower:
 
 class Enemy:
     @staticmethod
-    def create(enemy_type, type_data, base_health, base_speed, spawn_delay, cell_size):
-        """Create a new enemy instance."""
+    def create(enemy_type, type_data, base_health, base_speed, spawn_delay, cell_size, sprites):
+        """Create a new enemy instance with animation support."""
         health = base_health * type_data['health_factor']
         speed = base_speed * type_data['speed_factor']
-        
-        return {
+
+        # Initialize enemy with all required fields
+        enemy = {
             'x': cell_size / 2,  # Starting position
             'y': cell_size / 2,
             'health': health,
@@ -84,13 +86,21 @@ class Enemy:
             'frozen': False,
             'freeze_timer': 0,
             'type': enemy_type,
+            'animation_frames': sprites,
+            'current_frame': 0,
+            'direction': "walk_right",
+            'animation_speed': 100,
+            'canvas_image': None,
+            # Add missing fields
             'damage_text': 0,
             'damage_text_timer': 0
         }
 
+        return enemy
+
     @staticmethod
-    def update(enemy, dt, cell_size, paths):
-        """Update enemy position and state."""
+    def update(enemy, dt, cell_size, paths, canvas):
+        """Update enemy position and animation."""
         # Handle spawn delay
         if enemy['spawn_delay'] > 0:
             enemy['spawn_delay'] -= 1 * dt
@@ -116,6 +126,35 @@ class Enemy:
         dy = enemy['target_y'] - enemy['y']
         dist = math.sqrt(dx*dx + dy*dy)
         
+        # Update direction based on movement
+        if abs(dx) > abs(dy):
+            enemy['direction'] = 'walk_right' if dx > 0 else 'walk_left'
+        else:
+            # Khi di chuyển dọc, dùng walk_updown 
+            enemy['direction'] = 'walk_updown'
+
+        # Create or update sprite with enhanced error checking
+        current_anim = enemy['animation_frames'].get(enemy['direction'])
+        if current_anim and len(current_anim) > 0:
+            
+            if not enemy.get('canvas_image'):
+                enemy['canvas_image'] = canvas.create_image(
+                    enemy['x'], enemy['y'],
+                    image=current_anim[0],
+                    anchor='center',
+                    tags='enemy'
+                )
+            else:
+                # Update animation frame
+                frame_index = (enemy['current_frame'] + 1) % len(current_anim)
+                enemy['current_frame'] = frame_index
+                frame = current_anim[frame_index]
+                canvas.itemconfig(enemy['canvas_image'], image=frame)
+                canvas.coords(enemy['canvas_image'], enemy['x'], enemy['y'])
+
+        # Update position
+        canvas.coords(enemy['canvas_image'], enemy['x'], enemy['y'])
+
         # Move towards target using normalized direction and speed
         if dist <= (speed * dt):  # Check if we would reach or pass the target
             # Reached target, move to next path point

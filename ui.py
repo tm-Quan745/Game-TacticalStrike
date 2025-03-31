@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+from PIL import Image, ImageTk
 
 class GameUI:
     def __init__(self, root, game):
@@ -140,9 +141,10 @@ class GameUI:
         self.score_label.config(text=f"Điểm: {self.game.score}")
     
     def draw_maze(self):
-        """Draw the current state of the maze, including towers, enemies, and projectiles."""
-        self.canvas.delete("all")
-        
+        """Draw the current state of the maze."""
+        # Xóa tất cả ngoại trừ sprites enemy
+        self.canvas.delete("terrain", "health_bar", "projectile", "tower")
+
         # Draw grid cells
         for y in range(self.game.grid_size):
             for x in range(self.game.grid_size):
@@ -150,23 +152,27 @@ class GameUI:
                     self.canvas.create_rectangle(
                         x * self.game.cell_size, y * self.game.cell_size,
                         (x + 1) * self.game.cell_size, (y + 1) * self.game.cell_size,
-                        fill="#8d6e63", outline="#5d4037"
+                        fill="#8d6e63", outline="#5d4037",
+                        tags="terrain"
                     )
                 else:  # Path
                     self.canvas.create_rectangle(
                         x * self.game.cell_size, y * self.game.cell_size,
                         (x + 1) * self.game.cell_size, (y + 1) * self.game.cell_size,
-                        fill="#e8f5e9", outline="#c8e6c9"
+                        fill="#e8f5e9", outline="#c8e6c9",
+                        tags="terrain"
                     )
         
         # Mark start and end points
         self.canvas.create_rectangle(
             0, 0, self.game.cell_size, self.game.cell_size,
-            fill="#4caf50", outline="#2e7d32"
+            fill="#4caf50", outline="#2e7d32",
+            tags="terrain"
         )
         self.canvas.create_text(
             self.game.cell_size/2, self.game.cell_size/2,
-            text="S", fill="white", font=("Arial", 12, "bold")
+            text="S", fill="white", font=("Arial", 12, "bold"),
+            tags="terrain"
         )
         
         self.canvas.create_rectangle(
@@ -174,15 +180,17 @@ class GameUI:
             (self.game.grid_size-1) * self.game.cell_size,
             self.game.grid_size * self.game.cell_size,
             self.game.grid_size * self.game.cell_size,
-            fill="#f44336", outline="#c62828"
+            fill="#f44336", outline="#c62828",
+            tags="terrain"
         )
         self.canvas.create_text(
             (self.game.grid_size-0.5) * self.game.cell_size,
             (self.game.grid_size-0.5) * self.game.cell_size,
-            text="E", fill="white", font=("Arial", 12, "bold")
+            text="E", fill="white", font=("Arial", 12, "bold"),
+            tags="terrain"
         )
         
-        # Draw towers
+        # Draw towers with tag
         for tower in self.game.towers:
             x, y = tower['x'], tower['y']
             tower_info = self.game.tower_types[tower['type']]
@@ -194,7 +202,8 @@ class GameUI:
                 y * self.game.cell_size + 2,
                 (x + 1) * self.game.cell_size - 2,
                 (y + 1) * self.game.cell_size - 2,
-                fill="#607d8b", outline="#455a64"
+                fill="#607d8b", outline="#455a64",
+                tags="tower"
             )
             
             # Tower top
@@ -203,7 +212,8 @@ class GameUI:
                 y * self.game.cell_size + 6,
                 (x + 1) * self.game.cell_size - 6,
                 (y + 1) * self.game.cell_size - 6,
-                fill=color, outline="black"
+                fill=color, outline="black",
+                tags="tower"
             )
             
             # Show range when hovering or selected
@@ -214,54 +224,90 @@ class GameUI:
                     y * self.game.cell_size - tower['range'] * self.game.cell_size + self.game.cell_size/2,
                     x * self.game.cell_size + tower['range'] * self.game.cell_size + self.game.cell_size/2,
                     y * self.game.cell_size + tower['range'] * self.game.cell_size + self.game.cell_size/2,
-                    outline=color, dash=(4, 2)
+                    outline=color, dash=(4, 2),
+                    tags="tower"
                 )
         
-        # Draw enemies
+        # Vẽ thanh máu phía trên sprites
         for enemy in self.game.enemies:
             if enemy['spawn_delay'] <= 0:
-                enemy_type = enemy['type']
-                enemy_info = self.game.enemy_types[enemy_type]
-                color = enemy_info["color"]
-                
-                # Enemy body
-                self.canvas.create_oval(
-                    enemy['x'] - 10, enemy['y'] - 10,
-                    enemy['x'] + 10, enemy['y'] + 10,
-                    fill=color, outline="black"
-                )
-                
-                # Health bar
+                # Vẽ thanh máu với tag health_bar
                 health_ratio = enemy['health'] / enemy['max_health']
                 bar_width = 20
                 bar_height = 4
+                
+                # Background của thanh máu
                 self.canvas.create_rectangle(
                     enemy['x'] - bar_width/2,
-                    enemy['y'] - 15,
+                    enemy['y'] - 20,  # Đẩy thanh máu lên cao hơn
                     enemy['x'] + bar_width/2,
-                    enemy['y'] - 15 + bar_height,
-                    fill="red"
-                )
-                self.canvas.create_rectangle(
-                    enemy['x'] - bar_width/2,
-                    enemy['y'] - 15,
-                    enemy['x'] - bar_width/2 + bar_width * health_ratio,
-                    enemy['y'] - 15 + bar_height,
-                    fill="green"
+                    enemy['y'] - 20 + bar_height,
+                    fill="red",
+                    tags="health_bar"
                 )
                 
-                # Show damage text
+                # Thanh máu hiện tại
+                self.canvas.create_rectangle(
+                    enemy['x'] - bar_width/2,
+                    enemy['y'] - 20,  # Đẩy thanh máu lên cao hơn
+                    enemy['x'] - bar_width/2 + bar_width * health_ratio,
+                    enemy['y'] - 20 + bar_height,
+                    fill="green",
+                    tags="health_bar"
+                )
+                
+                # Hiển thị damage text cao hơn thanh máu
                 if enemy['damage_text_timer'] > 0:
                     self.canvas.create_text(
-                        enemy['x'], enemy['y'] - 20,
+                        enemy['x'],
+                        enemy['y'] - 25,  # Đẩy text damage lên cao hơn
                         text=str(enemy['damage_text']),
-                        fill="red", font=("Arial", 10, "bold")
+                        fill="red",
+                        font=("Arial", 10, "bold"),
+                        tags="damage_text"
                     )
         
-        # Draw projectiles
+        # Draw projectiles as small lines instead of yellow dots
         for proj in self.game.projectiles:
-            self.canvas.create_oval(
-                proj['x'] - 3, proj['y'] - 3,
-                proj['x'] + 3, proj['y'] + 3,
-                fill="yellow", outline="orange"
+            # Calculate direction
+            dx = proj['target_x'] - proj['x'] 
+            dy = proj['target_y'] - proj['y']
+            length = 6  # Length of projectile line
+            
+            # Draw projectile as a small line in direction of movement
+            self.canvas.create_line(
+                proj['x'], proj['y'],
+                proj['x'] + dx/length, proj['y'] + dy/length,
+                fill="white", width=2,
+                tags="projectile"
             )
+
+        # Sắp xếp các layer theo thứ tự
+        self.canvas.tag_raise("enemy")      # Sprite enemy ở giữa
+        self.canvas.tag_raise("health_bar") # Thanh máu phía trên sprite
+        self.canvas.tag_raise("damage_text") # Text damage cao nhất
+    
+    def load_sprites(self, sheet_path, num_frames):
+        """Load sprite sheet and split into frames."""
+        try:
+            sheet = Image.open(sheet_path)
+            
+            # Giảm kích thước sprite xuống còn 1/3
+            new_width = sheet.width // 3
+            new_height = sheet.height // 3
+            sheet = sheet.resize((new_width, new_height), Image.Resampling.LANCZOS)
+            
+            # Tính toán kích thước frame mới
+            frame_width = new_width // num_frames
+            frame_height = new_height
+            frames = []
+            
+            for i in range(num_frames):
+                frame = sheet.crop((i * frame_width, 0, (i + 1) * frame_width, frame_height))
+                frames.append(ImageTk.PhotoImage(frame))
+            
+            return frames
+        except Exception as e:
+            print(f"Error loading sprite sheet {sheet_path}: {e}")
+            placeholder = Image.new('RGBA', (16, 16), 'red')
+            return [ImageTk.PhotoImage(placeholder)]

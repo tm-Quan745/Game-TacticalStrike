@@ -1,10 +1,11 @@
 import random
 import time
-from tkinter import messagebox
+from tkinter import messagebox, ttk
 import tkinter as tk
 from maze_generator import generate_maze
 from pathfinding import find_path
 from entities import Tower, Enemy, Projectile
+from PIL import Image, ImageTk
 
 class MazeTowerDefenseGame:
     def __init__(self, root):
@@ -12,7 +13,7 @@ class MazeTowerDefenseGame:
         
         # Game parameters
         self.grid_size = 15
-        self.cell_size = 36
+        self.cell_size = 48  # Tăng kích thước ô từ 36 lên 64
         self.maze = []
         self.towers = []
         self.enemies = []
@@ -155,7 +156,7 @@ class MazeTowerDefenseGame:
     
     def update_enemies(self, dt):
         for enemy in self.enemies[:]:
-            if not Enemy.update(enemy, dt, self.cell_size, self.paths):
+            if not Enemy.update(enemy, dt, self.cell_size, self.paths, self.ui.canvas):  # Add canvas parameter
                 # Enemy reached the end
                 self.lives -= 1
                 self.enemies.remove(enemy)
@@ -203,6 +204,32 @@ class MazeTowerDefenseGame:
             self.ui.start_button.config(text="Làn Sóng Đang Diễn Ra...")
     
     def spawn_enemies(self):
+        """Spawn enemies with sprite animations."""
+        try:
+            if not hasattr(self, 'enemy_sprites'):
+                sprite_path = "./sprites/"
+                
+                # Load sprites
+                walk_right = self.ui.load_sprites(f"{sprite_path}walkright.png", 4)
+                walk_left = self.ui.load_sprites(f"{sprite_path}walkleft.png", 4) 
+                walk_updown = self.ui.load_sprites(f"{sprite_path}walkup.png", 4)
+                
+                self.enemy_sprites = {
+                    'walk_right': walk_right,
+                    'walk_left': walk_left,
+                    'walk_updown': walk_updown  # Make sure this matches the direction name used in Enemy.update
+                }
+        except Exception as e:
+            print(f"Error loading sprites: {e}")
+            # Create placeholder sprites if loading fails
+            placeholder = Image.new('RGBA', (32, 32), 'red')
+            placeholder_image = ImageTk.PhotoImage(placeholder)
+            self.enemy_sprites = {
+                'walk_right': [placeholder_image],
+                'walk_left': [placeholder_image], 
+                'walk_updown': [placeholder_image]
+            }
+        
         num_enemies = 3 + self.current_wave * 3  # Fewer base enemies but scales faster
         base_health = 50 + self.current_wave * 10
         base_speed = 50 + min(100, self.current_wave * 10)
@@ -216,8 +243,15 @@ class MazeTowerDefenseGame:
                 elif r < 0.35:  # 20% chance for fast
                     enemy_type = "fast"
             
-            enemy = Enemy.create(enemy_type, self.enemy_types[enemy_type],
-                               base_health, base_speed, i * 15, self.cell_size)
+            enemy = Enemy.create(
+                enemy_type,
+                self.enemy_types[enemy_type],
+                base_health,
+                base_speed,
+                i * 15,
+                self.cell_size,
+                self.enemy_sprites  # Pass sprite animations
+            )
             self.enemies.append(enemy)
     
     def game_over(self):
