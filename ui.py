@@ -6,6 +6,26 @@ class GameUI:
     def __init__(self, root, game):
         self.root = root
         self.game = game
+        
+        # Load tile sprites
+        try:
+            grass = Image.open("./sprites/grass.png")
+            land = Image.open("./sprites/land.png")
+            # Resize tiles to match cell size
+            grass = grass.resize((game.cell_size, game.cell_size), Image.Resampling.LANCZOS)
+            land = land.resize((game.cell_size, game.cell_size), Image.Resampling.LANCZOS)
+            self.tile_sprites = {
+                'grass': ImageTk.PhotoImage(grass),
+                'land': ImageTk.PhotoImage(land)
+            }
+        except Exception as e:
+            print(f"Error loading tile sprites: {e}")
+            # Create placeholder tiles
+            self.tile_sprites = {
+                'grass': None,
+                'land': None
+            }
+        
         self.setup_ui()
     
     def setup_ui(self):
@@ -142,24 +162,28 @@ class GameUI:
     
     def draw_maze(self):
         """Draw the current state of the maze."""
-        # Xóa tất cả ngoại trừ sprites enemy
         self.canvas.delete("terrain", "health_bar", "projectile", "tower")
 
-        # Draw grid cells
+        # Draw grid cells using sprites
         for y in range(self.game.grid_size):
             for x in range(self.game.grid_size):
-                if self.game.maze[y][x] == 1:  # Wall
-                    self.canvas.create_rectangle(
-                        x * self.game.cell_size, y * self.game.cell_size,
-                        (x + 1) * self.game.cell_size, (y + 1) * self.game.cell_size,
-                        fill="#8d6e63", outline="#5d4037",
+                # Wall cells use grass sprite, path cells use land sprite
+                sprite = self.tile_sprites['grass'] if self.game.maze[y][x] == 1 else self.tile_sprites['land']
+                if sprite:
+                    self.canvas.create_image(
+                        x * self.game.cell_size, 
+                        y * self.game.cell_size,
+                        image=sprite,
+                        anchor='nw',
                         tags="terrain"
                     )
-                else:  # Path
+                else:
+                    # Fallback to colored rectangles if sprites failed to load
                     self.canvas.create_rectangle(
                         x * self.game.cell_size, y * self.game.cell_size,
                         (x + 1) * self.game.cell_size, (y + 1) * self.game.cell_size,
-                        fill="#e8f5e9", outline="#c8e6c9",
+                        fill="#8d6e63" if self.game.maze[y][x] == 1 else "#e8f5e9",
+                        outline="#5d4037" if self.game.maze[y][x] == 1 else "#c8e6c9",
                         tags="terrain"
                     )
         
@@ -293,8 +317,8 @@ class GameUI:
             sheet = Image.open(sheet_path)
             
             # Giảm kích thước sprite xuống còn 1/3
-            new_width = sheet.width // 3
-            new_height = sheet.height // 3
+            new_width = sheet.width // 2
+            new_height = sheet.height // 2
             sheet = sheet.resize((new_width, new_height), Image.Resampling.LANCZOS)
             
             # Tính toán kích thước frame mới

@@ -13,7 +13,7 @@ class MazeTowerDefenseGame:
         
         # Game parameters
         self.grid_size = 15
-        self.cell_size = 48  # Tăng kích thước ô từ 36 lên 64
+        self.cell_size = 48  
         self.maze = []
         self.towers = []
         self.enemies = []
