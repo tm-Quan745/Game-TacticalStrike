@@ -11,19 +11,28 @@ class GameUI:
         try:
             grass = Image.open("./sprites/grass.png")
             land = Image.open("./sprites/land.png")
-            # Resize tiles to match cell size
+            shoot_right = Image.open("./sprites/shoot_right.png") 
+            shoot_left = Image.open("./sprites/shoot_left.png")
+
+            # Resize sprites
             grass = grass.resize((game.cell_size, game.cell_size), Image.Resampling.LANCZOS)
             land = land.resize((game.cell_size, game.cell_size), Image.Resampling.LANCZOS)
+            shoot_right = shoot_right.resize((16, 16), Image.Resampling.LANCZOS)
+            shoot_left = shoot_left.resize((16, 16), Image.Resampling.LANCZOS)
+
             self.tile_sprites = {
                 'grass': ImageTk.PhotoImage(grass),
-                'land': ImageTk.PhotoImage(land)
+                'land': ImageTk.PhotoImage(land),
+                'shoot_right': ImageTk.PhotoImage(shoot_right),
+                'shoot_left': ImageTk.PhotoImage(shoot_left)
             }
         except Exception as e:
-            print(f"Error loading tile sprites: {e}")
-            # Create placeholder tiles
+            print(f"Error loading sprites: {e}")
             self.tile_sprites = {
                 'grass': None,
-                'land': None
+                'land': None,
+                'shoot_right': None,
+                'shoot_left': None
             }
         
         self.setup_ui()
@@ -251,6 +260,31 @@ class GameUI:
                     outline=color, dash=(4, 2),
                     tags="tower"
                 )
+            
+            # Draw tower health bar
+            health_ratio = tower['health'] / tower['max_health']
+            bar_width = self.game.cell_size - 4
+            bar_height = 4
+            
+            # Health bar background
+            self.canvas.create_rectangle(
+                x * self.game.cell_size + 2,
+                y * self.game.cell_size - 6,
+                (x + 1) * self.game.cell_size - 2,
+                y * self.game.cell_size - 2,
+                fill="red",
+                tags="tower"
+            )
+            
+            # Current health
+            self.canvas.create_rectangle(
+                x * self.game.cell_size + 2,
+                y * self.game.cell_size - 6,
+                x * self.game.cell_size + 2 + bar_width * health_ratio,
+                y * self.game.cell_size - 2,
+                fill="green",
+                tags="tower"
+            )
         
         # Vẽ thanh máu phía trên sprites
         for enemy in self.game.enemies:
@@ -291,20 +325,15 @@ class GameUI:
                         tags="damage_text"
                     )
         
-        # Draw projectiles as small lines instead of yellow dots
+        # Draw projectiles using directional sprites instead of lines
         for proj in self.game.projectiles:
-            # Calculate direction
-            dx = proj['target_x'] - proj['x'] 
-            dy = proj['target_y'] - proj['y']
-            length = 6  # Length of projectile line
-            
-            # Draw projectile as a small line in direction of movement
-            self.canvas.create_line(
-                proj['x'], proj['y'],
-                proj['x'] + dx/length, proj['y'] + dy/length,
-                fill="white", width=2,
-                tags="projectile"
-            )
+            if 'sprite' in proj:  # Check if projectile has sprite
+                self.canvas.create_image(
+                    proj['x'], proj['y'],
+                    image=proj['sprite'],
+                    anchor='center',
+                    tags="projectile"
+                )
 
         # Sắp xếp các layer theo thứ tự
         self.canvas.tag_raise("enemy")      # Sprite enemy ở giữa
@@ -315,10 +344,16 @@ class GameUI:
         """Load sprite sheet and split into frames."""
         try:
             sheet = Image.open(sheet_path)
+            print(f"Loading sprite sheet: {sheet_path}")
             
-            # Giảm kích thước sprite xuống còn 1/3
-            new_width = sheet.width // 2
-            new_height = sheet.height // 2
+            # Resize để projectile sprite nhỏ hơn
+            if 'shoot' in sheet_path:
+                new_width = sheet.width // 3  # Giảm kích thước projectile
+                new_height = sheet.height // 3
+            else:
+                new_width = sheet.width // 2
+                new_height = sheet.height // 2
+                
             sheet = sheet.resize((new_width, new_height), Image.Resampling.LANCZOS)
             
             # Tính toán kích thước frame mới
