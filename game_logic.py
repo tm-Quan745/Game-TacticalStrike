@@ -1,10 +1,11 @@
 import random
 import time
-from tkinter import messagebox
+from tkinter import messagebox, ttk
 import tkinter as tk
 from maze_generator import generate_maze
 from pathfinding import find_path
 from entities import Tower, Enemy, Projectile
+from PIL import Image, ImageTk
 
 class MazeTowerDefenseGame:
     def __init__(self, root):
@@ -12,7 +13,7 @@ class MazeTowerDefenseGame:
         
         # Game parameters
         self.grid_size = 15
-        self.cell_size = 36
+        self.cell_size = 48  
         self.maze = []
         self.towers = []
         self.enemies = []
@@ -80,6 +81,30 @@ class MazeTowerDefenseGame:
             }
         }
         
+        try:
+            # Load projectile sprites
+            sprite_path = "./sprites/"
+            shoot_right = Image.open(f"{sprite_path}shoot_right.png")
+            shoot_left = Image.open(f"{sprite_path}shoot_left.png")
+            
+            # Resize projectile sprites
+            shoot_right = shoot_right.resize((16, 16), Image.Resampling.LANCZOS) 
+            shoot_left = shoot_left.resize((16, 16), Image.Resampling.LANCZOS)
+            
+            self.projectile_sprites = {
+                'shoot_right': ImageTk.PhotoImage(shoot_right),
+                'shoot_left': ImageTk.PhotoImage(shoot_left)
+            }
+            print(f"Loaded projectile sprites from {sprite_path}")
+            
+        except Exception as e:
+            print(f"Error loading projectile sprites: {e}")
+            placeholder = Image.new('RGBA', (16, 16), 'yellow')
+            self.projectile_sprites = {
+                'shoot_right': ImageTk.PhotoImage(placeholder),
+                'shoot_left': ImageTk.PhotoImage(placeholder)
+            }
+        
         # Initialize UI (needs to be imported here to avoid circular imports)
         from ui import GameUI
         self.ui = GameUI(root, self)
@@ -113,6 +138,10 @@ class MazeTowerDefenseGame:
         if hasattr(self, 'ui'):
             self.ui.draw_maze()
             self.ui.update_info_labels()
+            self.ui.canvas.delete("all")
+            self.ui.start_button.config(text="Bắt Đầu Làn Sóng", state=tk.NORMAL)
+  
+        
     
     def find_paths(self):
         # Find a single path using the selected algorithm
@@ -155,7 +184,7 @@ class MazeTowerDefenseGame:
     
     def update_enemies(self, dt):
         for enemy in self.enemies[:]:
-            if not Enemy.update(enemy, dt, self.cell_size, self.paths):
+            if not Enemy.update(enemy, dt, self.cell_size, self.paths, self.ui.canvas, self):  # Pass self (game instance)
                 # Enemy reached the end
                 self.lives -= 1
                 self.enemies.remove(enemy)
@@ -168,7 +197,9 @@ class MazeTowerDefenseGame:
         for tower in self.towers:
             target = Tower.find_target(tower, self.enemies, self.cell_size)
             if target:
-                Tower.attack(tower, target, dt, self.projectiles, self.cell_size)
+                dx = target['x'] - (tower['x'] * self.cell_size + self.cell_size/2)
+                sprite = self.projectile_sprites['shoot_right' if dx > 0 else 'shoot_left']
+                Tower.attack(tower, target, dt, self.projectiles, self.cell_size, sprite)
     
     def update_projectiles(self, dt):
         for projectile in self.projectiles[:]:
@@ -203,21 +234,56 @@ class MazeTowerDefenseGame:
             self.ui.start_button.config(text="Làn Sóng Đang Diễn Ra...")
     
     def spawn_enemies(self):
-        num_enemies = 3 + self.current_wave * 3  # Fewer base enemies but scales faster
-        base_health = 50 + self.current_wave * 10
-        base_speed = 50 + min(100, self.current_wave * 10)
+        """Spawn enemies with sprite animations."""
+        try:
+            if not hasattr(self, 'enemy_sprites'):
+                sprite_path = "./sprites/"
+                
+                # Load sprites
+                walk_right = self.ui.load_sprites(f"{sprite_path}walkright.png", 4)
+                walk_left = self.ui.load_sprites(f"{sprite_path}walkleft.png", 4) 
+                walk_updown = self.ui.load_sprites(f"{sprite_path}walkup.png", 4)
+                
+                self.enemy_sprites = {
+                    'walk_right': walk_right,
+                    'walk_left': walk_left,
+                    'walk_updown': walk_updown  # Make sure this matches the direction name used in Enemy.update
+                }
+        except Exception as e:
+            print(f"Error loading sprites: {e}")
+            # Create placeholder sprites if loading fails
+            placeholder = Image.new('RGBA', (32, 32), 'red')
+            placeholder_image = ImageTk.PhotoImage(placeholder)
+            self.enemy_sprites = {
+                'walk_right': [placeholder_image],
+                'walk_left': [placeholder_image], 
+                'walk_updown': [placeholder_image]
+            }
+        
+        num_enemies = 10 + self.current_wave * 5  # Tăng từ 3 lên 10 quân ban đầu
+        base_health = 50 + self.current_wave * 8 
+        base_speed = 50 + min(80, self.current_wave * 8)
+        
+        spawn_delay_base = 5  # Giảm từ 15 xuống 5
         
         for i in range(num_enemies):
             enemy_type = "normal"
-            if self.current_wave >= 2:  # Start special enemies earlier
+            if self.current_wave >= 2:
                 r = random.random()
-                if r < 0.15:  # 15% chance for tank
+                if r < 0.2:  # Tăng tỉ lệ tank từ 15% lên 20%
                     enemy_type = "tank"
-                elif r < 0.35:  # 20% chance for fast
+                elif r < 0.5:  # Tăng tỉ lệ fast từ 20% lên 30% 
                     enemy_type = "fast"
             
-            enemy = Enemy.create(enemy_type, self.enemy_types[enemy_type],
-                               base_health, base_speed, i * 15, self.cell_size)
+            enemy = Enemy.create(
+                enemy_type,
+                self.enemy_types[enemy_type],
+                base_health,
+                base_speed,
+                i * spawn_delay_base,  # Spawn quân nhanh hơn
+                self.cell_size,
+                self.enemy_sprites
+            )
             self.enemies.append(enemy)
     
     def game_over(self):
