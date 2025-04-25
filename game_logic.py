@@ -27,7 +27,7 @@ class MazeTowerDefenseGame:
         self.score = 0
         self.build_mode = None
         self.game_speed = 1.0
-        
+
         # Tower info
         self.tower_types = {
             "shooter": {
@@ -206,18 +206,22 @@ class MazeTowerDefenseGame:
             if not Projectile.update(projectile, dt):
                 self.projectiles.remove(projectile)
                 for enemy in self.enemies[:]:
-                    if (abs(enemy['x'] - projectile['target_x']) < self.cell_size/2 and
-                        abs(enemy['y'] - projectile['target_y']) < self.cell_size/2):
+                    if (abs(enemy['x'] - projectile['target_x']) < self.cell_size / 2 and
+                        abs(enemy['y'] - projectile['target_y']) < self.cell_size / 2):
+
                         enemy['health'] -= projectile['damage']
+
                         if projectile['tower_type'] == 'freezer':
                             enemy['frozen'] = True
                             enemy['freeze_timer'] = 100
+
                         if enemy['health'] <= 0:
                             self.money += enemy['reward']
                             self.score += enemy['reward']
                             self.enemies.remove(enemy)
                             self.ui.update_info_labels()
                         break
+
     
     def check_wave_end(self):
         if self.wave_in_progress and not self.enemies:
@@ -243,12 +247,19 @@ class MazeTowerDefenseGame:
                 walk_right = self.ui.load_sprites(f"{sprite_path}walkright.png", 4)
                 walk_left = self.ui.load_sprites(f"{sprite_path}walkleft.png", 4) 
                 walk_updown = self.ui.load_sprites(f"{sprite_path}walkup.png", 4)
+                shoot_right = self.ui.load_sprites(f"{sprite_path}shoot_right.png", 4)
+                shoot_left = self.ui.load_sprites(f"{sprite_path}shoot_left.png", 4)
                 
                 self.enemy_sprites = {
                     'walk_right': walk_right,
                     'walk_left': walk_left,
-                    'walk_updown': walk_updown  # Make sure this matches the direction name used in Enemy.update
+                    'walk_updown': walk_updown,  # Make sure this matches the direction name used in Enemy.update
+                    'shoot_right': shoot_right,
+                    'shoot_left': shoot_left
                 }
+            projectile_sprite = Image.open(f"{sprite_path}grass3.png")
+            projectile_sprite = projectile_sprite.resize((16, 16))
+            self.enemy_projectile_sprite = ImageTk.PhotoImage(projectile_sprite)
         except Exception as e:
             print(f"Error loading sprites: {e}")
             # Create placeholder sprites if loading fails
@@ -257,8 +268,10 @@ class MazeTowerDefenseGame:
             self.enemy_sprites = {
                 'walk_right': [placeholder_image],
                 'walk_left': [placeholder_image], 
-                'walk_updown': [placeholder_image]
-            }
+                'walk_updown': [placeholder_image],
+                'shoot_right': [placeholder_image],
+                'shoot_left': [placeholder_image]
+            } 
         
         num_enemies = 10 + self.current_wave * 5  # Tăng từ 3 lên 10 quân ban đầu
         base_health = 50 + self.current_wave * 8 
@@ -433,7 +446,7 @@ class MazeTowerDefenseGame:
             tower = self.tower_types[mode]
             info_text = f"{tower['name']}\n\n"
             info_text += f"Sát thương: {tower['damage']}\n"
-            info_text += f"Tầm bắn: {tower['range']} ô\n"
+            info_text += f"Tầm bắn: {tower['range']} ôn\n"
             info_text += f"Tốc độ bắn: {100/tower['fire_rate']:.1f}/s\n\n"
             info_text += f"{tower['description']}"
             

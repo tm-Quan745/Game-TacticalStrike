@@ -11,28 +11,32 @@ class GameUI:
         try:
             grass = Image.open("./sprites/grass.png")
             land = Image.open("./sprites/land.png")
-            shoot_right = Image.open("./sprites/shoot_right.png") 
-            shoot_left = Image.open("./sprites/shoot_left.png")
-
+            # Add projectile sprites loading
+            ice = Image.open("./sprites/grass2.png")
+            sniper = Image.open("./sprites/grass3.png")
+            bullet = Image.open("./sprites/land1.jpg")
             # Resize sprites
             grass = grass.resize((game.cell_size, game.cell_size), Image.Resampling.LANCZOS)
             land = land.resize((game.cell_size, game.cell_size), Image.Resampling.LANCZOS)
-            shoot_right = shoot_right.resize((16, 16), Image.Resampling.LANCZOS)
-            shoot_left = shoot_left.resize((16, 16), Image.Resampling.LANCZOS)
+            bullet = bullet.resize((16, 16), Image.Resampling.LANCZOS)
+            ice = ice.resize((16, 16), Image.Resampling.LANCZOS)
+            sniper = sniper.resize((16, 16), Image.Resampling.LANCZOS)
 
             self.tile_sprites = {
                 'grass': ImageTk.PhotoImage(grass),
                 'land': ImageTk.PhotoImage(land),
-                'shoot_right': ImageTk.PhotoImage(shoot_right),
-                'shoot_left': ImageTk.PhotoImage(shoot_left)
+            }
+            
+            self.projectile_sprites = {
+                'shooter': ImageTk.PhotoImage(bullet),
+                'freezer': ImageTk.PhotoImage(ice),
+                'sniper': ImageTk.PhotoImage(sniper)
             }
         except Exception as e:
             print(f"Error loading sprites: {e}")
             self.tile_sprites = {
                 'grass': None,
                 'land': None,
-                'shoot_right': None,
-                'shoot_left': None
             }
         
         self.setup_ui()
@@ -325,15 +329,25 @@ class GameUI:
                         tags="damage_text"
                     )
         
-        # Draw projectiles using directional sprites instead of lines
+        # Draw projectiles as simple dots with trails
         for proj in self.game.projectiles:
-            if 'sprite' in proj:  # Check if projectile has sprite
-                self.canvas.create_image(
-                    proj['x'], proj['y'],
-                    image=proj['sprite'],
-                    anchor='center',
-                    tags="projectile"
-                )
+            # Draw main projectile
+            self.canvas.create_oval(
+                proj['x'] - 4, proj['y'] - 4,
+                proj['x'] + 4, proj['y'] + 4,
+                fill="red", outline="darkred",
+                tags="projectile"
+            )
+            
+            # Simple trail effect
+            self.canvas.create_line(
+                proj['x'], proj['y'],
+                proj['x'] - proj['dx'] * 3,
+                proj['y'] - proj['dy'] * 3,
+                fill=self.game.tower_types[proj['tower_type']]['color'],
+                width=2,
+                tags="projectile"
+            )
 
         # Sắp xếp các layer theo thứ tự
         self.canvas.tag_raise("enemy")      # Sprite enemy ở giữa
