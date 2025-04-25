@@ -20,22 +20,22 @@ class MazeTowerDefenseGame:
         
         # Game parameters
         self.grid_size = 15
-        self.cell_size = 36  # Increased cell size for better visibility
+        self.cell_size = 36
         self.maze = []
         self.towers = []
         self.enemies = []
         self.paths = []
-        self.projectiles = []  # New: visual projectiles
+        self.projectiles = []
         self.money = 100
         self.lives = 20
         self.current_wave = 0
         self.wave_in_progress = False
         self.selected_algo = tk.StringVar(value="BFS")
-        self.score = 0  # New: track player score
+        self.score = 0
         self.build_mode = None
-        self.game_speed = 1.0  # New: game speed multiplier
+        self.game_speed = 1.0
         
-        # Tower info
+        # Tower info with brighter colors
         self.tower_types = {
             "shooter": {
                 "name": "Tháp Bắn",
@@ -43,7 +43,7 @@ class MazeTowerDefenseGame:
                 "damage": 10,
                 "range": 3,
                 "fire_rate": 20,
-                "color": "#3498db",
+                "color": "#2196F3",  # Bright blue
                 "description": "Bắn kẻ địch từ xa với tốc độ cao"
             },
             "freezer": {
@@ -52,36 +52,36 @@ class MazeTowerDefenseGame:
                 "damage": 5,
                 "range": 2,
                 "fire_rate": 30,
-                "color": "#00bcd4",
+                "color": "#00E5FF",  # Cyan
                 "description": "Làm chậm và gây sát thương nhẹ"
             },
-            "sniper": {  # New tower type
+            "sniper": {
                 "name": "Tháp Bắn Tỉa",
                 "cost": 50,
                 "damage": 30,
                 "range": 5,
                 "fire_rate": 50,
-                "color": "#9b59b6",
+                "color": "#E040FB",  # Bright purple
                 "description": "Gây sát thương lớn với tầm xa"
             }
         }
         
-        # Enemy types
+        # Enemy types with brighter colors
         self.enemy_types = {
             "normal": {
-                "color": "#e67e22",
+                "color": "#FF9800",  # Orange
                 "speed_factor": 1.0,
                 "health_factor": 1.0,
                 "reward": 10
             },
             "fast": {
-                "color": "#e74c3c",
+                "color": "#F44336",  # Bright red
                 "speed_factor": 2.0,
                 "health_factor": 0.6,
                 "reward": 15
             },
             "tank": {
-                "color": "#7f8c8d",
+                "color": "#8BC34A",  # Light green
                 "speed_factor": 0.6,
                 "health_factor": 2.5,
                 "reward": 20
@@ -226,7 +226,8 @@ class MazeTowerDefenseGame:
         speeds = [1.0, 1.5, 2.0, 0.5]
         current_index = speeds.index(self.game_speed)
         self.game_speed = speeds[(current_index + 1) % len(speeds)]
-        self.speed_btn.config(text=f"{self.game_speed}x")
+        # Update speed button
+        self.speed_btn.configure(text=f"{self.game_speed}x")
     
     def show_help(self):
         help_text = """
@@ -253,7 +254,8 @@ class MazeTowerDefenseGame:
         text_widget = tk.Text(help_window, wrap=tk.WORD, padx=10, pady=10)
         text_widget.pack(fill=tk.BOTH, expand=True)
         text_widget.insert(tk.END, help_text)
-        text_widget.config(state=tk.DISABLED)
+        # Configure text widget
+        text_widget.configure(state=tk.DISABLED)
         
         ttk.Button(help_window, text="Đóng", command=help_window.destroy).pack(pady=10)
     
@@ -269,11 +271,11 @@ class MazeTowerDefenseGame:
             info_text += f"Tốc độ bắn: {100/tower['fire_rate']:.1f}/s\n\n"
             info_text += f"{tower['description']}"
             
-            self.tower_info_label.config(text=info_text)
+            self.tower_info_label.configure(text=info_text)
         elif mode == "delete":
-            self.tower_info_label.config(text="Chọn tháp để xóa và nhận lại 5$")
+            self.tower_info_label.configure(text="Chọn tháp để xóa và nhận lại 5$")
         else:
-            self.tower_info_label.config(text="Chọn tháp để xem thông tin chi tiết")
+            self.tower_info_label.configure(text="Chọn tháp để xem thông tin chi tiết")
     
     def on_canvas_hover(self, event):
         # Convert mouse coordinates to grid coordinates
@@ -283,11 +285,11 @@ class MazeTowerDefenseGame:
         # Update the status label with hover information
         if 0 <= grid_x < self.grid_size and 0 <= grid_y < self.grid_size:
             if (grid_x, grid_y) == (0, 0):
-                self.status_label.config(text="Điểm Xuất Phát (Kẻ địch)")
+                self.status_label.configure(text="Điểm Xuất Phát (Kẻ địch)")
             elif (grid_x, grid_y) == (self.grid_size-1, self.grid_size-1):
-                self.status_label.config(text="Điểm Đích (Bảo vệ đây!)")
+                self.status_label.configure(text="Điểm Đích (Bảo vệ đây!)")
             elif self.maze[grid_y][grid_x] == 1:
-                self.status_label.config(text="Tường (Không thể xây tháp)")
+                self.status_label.configure(text="Tường (Không thể xây tháp)")
             elif self.maze[grid_y][grid_x] == 2:
                 # Find the tower at this position
                 for tower in self.towers:
@@ -295,14 +297,14 @@ class MazeTowerDefenseGame:
                         tower_type = tower['type']
                         tower_info = self.tower_types[tower_type]
                         status = f"{tower_info['name']} | DMG: {tower['damage']} | RNG: {tower['range']}"
-                        self.status_label.config(text=status)
+                        self.status_label.configure(text=status)
                         break
             else:
                 if hasattr(self, 'build_mode') and self.build_mode in self.tower_types:
                     tower = self.tower_types[self.build_mode]
-                    self.status_label.config(text=f"Xây {tower['name']} tại ({grid_x}, {grid_y})")
+                    self.status_label.configure(text=f"Xây {tower['name']} tại ({grid_x}, {grid_y})")
                 else:
-                    self.status_label.config(text=f"Ô trống tại ({grid_x}, {grid_y})")
+                    self.status_label.configure(text=f"Ô trống tại ({grid_x}, {grid_y})")
     
     def on_canvas_click(self, event):
         # Convert mouse coordinates to grid coordinates
@@ -416,9 +418,13 @@ class MazeTowerDefenseGame:
         
         # Update UI
         self.draw_maze()
-        self.update_info_labels()
-        self.start_button.config(text="Bắt Đầu Làn Sóng")
-        self.status_label.config(text="Mê cung mới đã được tạo! Hãy bắt đầu xây tháp.")
+        # Update info labels
+        self.money_label.configure(text=f"Tiền: {self.money}$")
+        self.lives_label.configure(text=f"Mạng: {self.lives}")
+        self.wave_label.configure(text=f"Làn sóng: {self.current_wave}")
+        self.score_label.configure(text=f"Điểm: {self.score}")
+        self.start_button.configure(text="Bắt Đầu Làn Sóng")
+        self.status_label.configure(text="Mê cung mới đã được tạo! Hãy bắt đầu xây tháp.")
         self.play_sound("new_game")
         
         # Calculate paths
@@ -569,10 +575,11 @@ class MazeTowerDefenseGame:
         self.find_paths()
     
     def update_info_labels(self):
-        self.money_label.config(text=f"Tiền: {self.money}$")
-        self.lives_label.config(text=f"Mạng: {self.lives}")
-        self.wave_label.config(text=f"Làn sóng: {self.current_wave}")
-        self.score_label.config(text=f"Điểm: {self.score}")
+        # Update info labels
+        self.money_label.configure(text=f"Tiền: {self.money}$")
+        self.lives_label.configure(text=f"Mạng: {self.lives}")
+        self.wave_label.configure(text=f"Làn sóng: {self.current_wave}")
+        self.score_label.configure(text=f"Điểm: {self.score}")
     
     def start_wave(self):
         if not self.wave_in_progress:
@@ -580,8 +587,9 @@ class MazeTowerDefenseGame:
             self.wave_in_progress = True
             self.spawn_enemies()
             self.update_info_labels()
-            self.start_button.config(text=f"Làn {self.current_wave} đang diễn ra...")
-            self.status_label.config(text=f"Làn sóng {self.current_wave} đã bắt đầu!")
+            # Update wave info
+            self.start_button.configure(text=f"Làn {self.current_wave} đang diễn ra...")
+            self.status_label.configure(text=f"Làn sóng {self.current_wave} đã bắt đầu!")
             self.play_sound("wave_start")
     
     def spawn_enemies(self):
@@ -1054,8 +1062,8 @@ class MazeTowerDefenseGame:
             self.update_info_labels()
             
             # Update UI
-            self.start_button.config(text="Bắt Đầu Làn Sóng")
-            self.status_label.config(text=f"Đã hoàn thành làn {self.current_wave}! Nhận {bonus}$ tiền thưởng.")
+            self.start_button.configure(text="Bắt Đầu Làn Sóng")
+            self.status_label.configure(text=f"Đã hoàn thành làn {self.current_wave}! Nhận {bonus}$ tiền thưởng.")
             self.play_sound("wave_complete")
     
     def game_over(self):

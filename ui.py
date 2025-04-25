@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk
+import customtkinter as ctk
 from PIL import Image, ImageTk
 
 class GameUI:
@@ -43,135 +43,123 @@ class GameUI:
     
     def setup_ui(self):
         # Main frame
-        main_frame = ttk.Frame(self.root)
+        main_frame = ctk.CTkFrame(self.root, fg_color=("#FFFFFF", "#FFFFFF"))
         main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         
         # Game frame (left)
-        game_frame = ttk.Frame(main_frame)
+        game_frame = ctk.CTkFrame(main_frame, fg_color=("#F0F8FF", "#F0F8FF"))
         game_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         
         # Game title
-        title_label = ttk.Label(game_frame, text="MÊ CUNG TOWER DEFENSE", style='Title.TLabel')
+        title_label = ctk.CTkLabel(game_frame, text="MÊ CUNG TOWER DEFENSE",
+                                font=ctk.CTkFont(size=24, weight="bold"),
+                                text_color="#2E7D32")
         title_label.pack(pady=(0, 10))
         
-        # Maze canvas
-        self.canvas = tk.Canvas(game_frame, 
-                              width=self.game.grid_size * self.game.cell_size,
-                              height=self.game.grid_size * self.game.cell_size,
-                              bg="#f5f5f5",
-                              highlightthickness=1,
-                              highlightbackground="#ddd")
+        # Maze canvas - keeping tk.Canvas
+        self.canvas = tk.Canvas(game_frame,
+                            width=self.game.grid_size * self.game.cell_size,
+                            height=self.game.grid_size * self.game.cell_size,
+                            bg="#E8F5E9",
+                            highlightthickness=1,
+                            highlightbackground="#81C784")
         self.canvas.pack(padx=10, pady=10)
         
         # Game status bar
-        status_frame = ttk.Frame(game_frame)
+        status_frame = ctk.CTkFrame(game_frame)
         status_frame.pack(fill=tk.X, pady=5)
         
-        self.status_label = ttk.Label(status_frame, text="Hãy xây tháp và bắt đầu!")
+        self.status_label = ctk.CTkLabel(status_frame, 
+                                      text="Hãy xây tháp và bắt đầu!",
+                                      font=ctk.CTkFont(size=14),
+                                      text_color="#1B5E20")
         self.status_label.pack(side=tk.LEFT, padx=10)
         
-        speed_frame = ttk.Frame(status_frame)
-        speed_frame.pack(side=tk.RIGHT, padx=10)
-        
-        ttk.Label(speed_frame, text="Tốc độ:").pack(side=tk.LEFT)
-        
-        self.speed_btn = ttk.Button(speed_frame, text="1x", width=3,
-                                  command=self.game.toggle_game_speed)
-        self.speed_btn.pack(side=tk.LEFT, padx=2)
-        
         # Control frame (right)
-        control_frame = ttk.Frame(main_frame, width=240)
+        control_frame = ctk.CTkFrame(main_frame, fg_color=("#F1F8E9", "#F1F8E9"))
         control_frame.pack(side=tk.RIGHT, fill=tk.Y, padx=10, pady=10)
         
-        # Info frame
-        info_frame = ttk.LabelFrame(control_frame, text="Thông Tin")
+        # Info frame with bright colors
+        info_frame = ctk.CTkFrame(control_frame, fg_color=("#E8F5E9", "#E8F5E9"))
+        info_title = ctk.CTkLabel(info_frame, text="Thông Tin",
+                               font=ctk.CTkFont(size=18, weight="bold"),
+                               text_color="#2E7D32")
+        info_title.pack(pady=5)
         info_frame.pack(fill=tk.X, pady=5)
         
-        self.money_label = ttk.Label(info_frame, text=f"Tiền: {self.game.money}$")
+        self.money_label = ctk.CTkLabel(info_frame, text=f"Tiền: {self.game.money}$",
+                                    font=ctk.CTkFont(size=14),
+                                    text_color="#1B5E20")
         self.money_label.pack(anchor=tk.W, padx=5, pady=2)
         
-        self.lives_label = ttk.Label(info_frame, text=f"Mạng: {self.game.lives}")
+        self.lives_label = ctk.CTkLabel(info_frame, text=f"Mạng: {self.game.lives}",
+                                     font=ctk.CTkFont(size=14),
+                                     text_color="#1B5E20")
         self.lives_label.pack(anchor=tk.W, padx=5, pady=2)
         
-        self.wave_label = ttk.Label(info_frame, text=f"Làn sóng: {self.game.current_wave}")
+        self.wave_label = ctk.CTkLabel(info_frame, text=f"Làn sóng: {self.game.current_wave}",
+                                    font=ctk.CTkFont(size=14),
+                                    text_color="#1B5E20")
         self.wave_label.pack(anchor=tk.W, padx=5, pady=2)
         
-        self.score_label = ttk.Label(info_frame, text=f"Điểm: {self.game.score}")
+        self.score_label = ctk.CTkLabel(info_frame, text=f"Điểm: {self.game.score}",
+                                     font=ctk.CTkFont(size=14),
+                                     text_color="#1B5E20")
         self.score_label.pack(anchor=tk.W, padx=5, pady=2)
         
-        # Algorithm selection frame
-        algo_frame = ttk.LabelFrame(control_frame, text="Thuật Toán Tìm Đường")
-        algo_frame.pack(fill=tk.X, pady=5)
+        # Game buttons with bright colors
+        self.start_button = ctk.CTkButton(control_frame, text="Bắt Đầu Làn Sóng",
+                                      font=ctk.CTkFont(size=14, weight="bold"),
+                                      fg_color="#4CAF50",
+                                      hover_color="#388E3C",
+                                      command=self.game.start_wave)
+        self.start_button.pack(fill=tk.X, padx=5, pady=5)
         
-        algorithms = ["BFS", "DFS", "Dijkstra", "A*"]
-        for algo in algorithms:
-            ttk.Radiobutton(algo_frame, text=algo, value=algo,
-                           variable=self.game.selected_algo,
-                           command=self.game.find_paths).pack(anchor=tk.W, padx=5, pady=2)
+        ctk.CTkButton(control_frame, text="Tạo Mê Cung Mới",
+                   font=ctk.CTkFont(size=14, weight="bold"),
+                   fg_color="#2196F3",
+                   hover_color="#1976D2",
+                   corner_radius=10,
+                   command=self.game.generate_maze).pack(fill=tk.X, padx=5, pady=5)
         
-        # Tower build frame
-        tower_frame = ttk.LabelFrame(control_frame, text="Xây Tháp")
+        # Tower buttons with bright colors
+        tower_frame = ctk.CTkFrame(control_frame, fg_color=("#E3F2FD", "#E3F2FD"))
+        tower_title = ctk.CTkLabel(tower_frame, text="Xây Tháp",
+                                font=ctk.CTkFont(size=18, weight="bold"),
+                                text_color="#1565C0")
+        tower_title.pack(pady=5)
         tower_frame.pack(fill=tk.X, pady=5)
         
-        # Tower selection with improved UI
         for tower_key, tower_info in self.game.tower_types.items():
-            tower_btn_frame = ttk.Frame(tower_frame)
-            tower_btn_frame.pack(fill=tk.X, padx=5, pady=3)
-            
-            # Tower icon (a colored square)
-            icon_canvas = tk.Canvas(tower_btn_frame, width=20, height=20,
-                                  bg=tower_info["color"], highlightthickness=1,
-                                  highlightbackground="black")
-            icon_canvas.pack(side=tk.LEFT, padx=(0, 5))
-            
-            # Tower info
-            tower_info_frame = ttk.Frame(tower_btn_frame)
-            tower_info_frame.pack(side=tk.LEFT, fill=tk.X, expand=True)
-            
-            ttk.Label(tower_info_frame,
-                     text=f"{tower_info['name']} ({tower_info['cost']}$)").pack(anchor=tk.W)
-            ttk.Label(tower_info_frame,
-                     text=f"DMG: {tower_info['damage']} | RNG: {tower_info['range']}",
-                     font=('Arial', 8)).pack(anchor=tk.W)
-            
-            ttk.Button(tower_btn_frame, text="Xây", width=6,
-                      command=lambda t=tower_key: self.game.set_build_mode(t)).pack(side=tk.RIGHT)
+            tower_btn = ctk.CTkButton(tower_frame, 
+                                    text=f"{tower_info['name']} ({tower_info['cost']}$)",
+                                    font=ctk.CTkFont(size=13),
+                                    fg_color=tower_info["color"],
+                                    hover_color="#424242",
+                                    command=lambda t=tower_key: self.game.set_build_mode(t))
+            tower_btn.pack(fill=tk.X, padx=5, pady=2)
         
-        # Delete tower option
-        delete_frame = ttk.Frame(tower_frame)
-        delete_frame.pack(fill=tk.X, padx=5, pady=3)
-        ttk.Label(delete_frame, text="Xóa Tháp (Hoàn 5$)").pack(side=tk.LEFT)
-        ttk.Button(delete_frame, text="Xóa", width=6,
-                  command=lambda: self.game.set_build_mode("delete")).pack(side=tk.RIGHT)
+        # Delete button with red color
+        ctk.CTkButton(tower_frame, text="Xóa Tháp",
+                   font=ctk.CTkFont(size=13),
+                   fg_color="#F44336",
+                   hover_color="#D32F2F",
+                   command=lambda: self.game.set_build_mode("delete")).pack(fill=tk.X, padx=5, pady=2)
         
-        # Tower info display (shown when hovering)
-        self.tower_info_display = ttk.LabelFrame(control_frame, text="Thông Tin Chi Tiết")
-        self.tower_info_display.pack(fill=tk.X, pady=5)
-        self.tower_info_label = ttk.Label(self.tower_info_display,
-                                        text="Chọn tháp để xem thông tin chi tiết")
-        self.tower_info_label.pack(pady=5, padx=5)
-        
-        # Game control buttons
-        control_btn_frame = ttk.LabelFrame(control_frame, text="Điều Khiển Game")
-        control_btn_frame.pack(fill=tk.X, pady=5)
-        
-        self.start_button = ttk.Button(control_btn_frame, text="Bắt Đầu Làn Sóng",
-                                     command=self.game.start_wave)
-        self.start_button.pack(fill=tk.X, padx=5, pady=2)
-        
-        ttk.Button(control_btn_frame, text="Tạo Mê Cung Mới",
-                  command=self.game.generate_maze).pack(fill=tk.X, padx=5, pady=2)
-        
-        # Help button
-        ttk.Button(control_frame, text="Hướng Dẫn",
-                  command=self.game.show_help).pack(fill=tk.X, padx=5, pady=10)
+        # Help button with nice blue color
+        ctk.CTkButton(control_frame, text="Hướng Dẫn",
+                   font=ctk.CTkFont(size=14),
+                   fg_color="#03A9F4",
+                   hover_color="#0288D1",
+                   corner_radius=10,
+                   command=self.game.show_help).pack(fill=tk.X, padx=5, pady=10)
     
     def update_info_labels(self):
         """Update all information labels with current game state."""
-        self.money_label.config(text=f"Tiền: {self.game.money}$")
-        self.lives_label.config(text=f"Mạng: {self.game.lives}")
-        self.wave_label.config(text=f"Làn sóng: {self.game.current_wave}")
-        self.score_label.config(text=f"Điểm: {self.game.score}")
+        self.money_label.configure(text=f"Tiền: {self.game.money}$")
+        self.lives_label.configure(text=f"Mạng: {self.game.lives}")
+        self.wave_label.configure(text=f"Làn sóng: {self.game.current_wave}")
+        self.score_label.configure(text=f"Điểm: {self.game.score}")
     
     def draw_maze(self):
         """Draw the current state of the maze."""
@@ -311,7 +299,7 @@ class GameUI:
                 # Thanh máu hiện tại
                 self.canvas.create_rectangle(
                     enemy['x'] - bar_width/2,
-                    enemy['y'] - 20,  # Đẩy thanh máu lên cao hơn
+                    enemy['y'] - 20,  # Đẩy máu lên cao hơn
                     enemy['x'] - bar_width/2 + bar_width * health_ratio,
                     enemy['y'] - 20 + bar_height,
                     fill="green",
@@ -355,7 +343,7 @@ class GameUI:
         self.canvas.tag_raise("damage_text") # Text damage cao nhất
     
     def load_sprites(self, sheet_path, num_frames):
-        """Load sprite sheet and split into frames."""
+        """Load sprite sheet and split into frames."""        
         try:
             sheet = Image.open(sheet_path)
             print(f"Loading sprite sheet: {sheet_path}")

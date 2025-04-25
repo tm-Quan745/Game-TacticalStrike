@@ -6,6 +6,7 @@ from maze_generator import generate_maze
 from pathfinding import find_path
 from entities import Tower, Enemy, Projectile
 from PIL import Image, ImageTk
+import customtkinter as ctk
 
 class MazeTowerDefenseGame:
     def __init__(self, root):
@@ -13,20 +14,21 @@ class MazeTowerDefenseGame:
         
         # Game parameters
         self.grid_size = 15
-        self.cell_size = 48  
+        self.cell_size = 42
+        self.initial_money = 100  # Add initial money value
+        self.initial_lives = 20   # Add initial lives value
         self.maze = []
         self.towers = []
         self.enemies = []
         self.paths = []
         self.projectiles = []
-        self.money = 100
-        self.lives = 20
+        self.money = self.initial_money
+        self.lives = self.initial_lives
         self.current_wave = 0
         self.wave_in_progress = False
         self.selected_algo = tk.StringVar(value="BFS")
         self.score = 0
         self.build_mode = None
-        self.game_speed = 1.0
 
         # Tower info
         self.tower_types = {
@@ -118,28 +120,32 @@ class MazeTowerDefenseGame:
         self.ui.canvas.bind("<Motion>", self.on_canvas_hover)
         self.root.after(50, self.game_loop)
     
-    def toggle_game_speed(self):
-        speeds = [1.0, 1.5, 2.0, 0.5]
-        current_index = speeds.index(self.game_speed)
-        self.game_speed = speeds[(current_index + 1) % len(speeds)]
-        self.ui.speed_btn.config(text=f"{self.game_speed}x")
-    
     def generate_maze(self):
+        """Generate a new random maze."""
         self.maze = generate_maze(self.grid_size)
+        
+        # Add start point (top-left)
+        self.maze[0][0] = 0
+        # Add end point (bottom-right) 
+        self.maze[self.grid_size-1][self.grid_size-1] = 0
+        
+        # Reset game state
         self.towers = []
         self.enemies = []
         self.projectiles = []
-        self.current_wave = 0
-        self.lives = 20
-        self.money = 100
+        self.money = self.initial_money
+        self.lives = self.initial_lives
         self.score = 0
+        self.current_wave = 0
         self.wave_in_progress = False
+        self.build_mode = None
+        
+        # Reset UI
+        self.ui.status_label.configure(text="Hãy xây tháp và bắt đầu!")
+        self.ui.start_button.configure(text="Bắt Đầu Làn Sóng", state="normal")
+        
+        # Find paths for all algorithms
         self.find_paths()
-        if hasattr(self, 'ui'):
-            self.ui.draw_maze()
-            self.ui.update_info_labels()
-            self.ui.canvas.delete("all")
-            self.ui.start_button.config(text="Bắt Đầu Làn Sóng", state=tk.NORMAL)
   
         
     
@@ -167,7 +173,7 @@ class MazeTowerDefenseGame:
             self.last_update = time.time()
         
         current_time = time.time()
-        dt = (current_time - self.last_update) * self.game_speed
+        dt = current_time - self.last_update
         self.last_update = current_time
         
         # Update game logic
@@ -229,13 +235,13 @@ class MazeTowerDefenseGame:
             self.current_wave += 1
             self.money += 20 + self.current_wave * 5
             self.ui.update_info_labels()
-            self.ui.start_button.config(text="Bắt Đầu Làn Sóng")
+            self.ui.start_button.configure(text="Bắt Đầu Làn Sóng")
     
     def start_wave(self):
         if not self.wave_in_progress:
             self.wave_in_progress = True
             self.spawn_enemies()
-            self.ui.start_button.config(text="Làn Sóng Đang Diễn Ra...")
+            self.ui.start_button.configure(text="Làn Sóng Đang Diễn Ra...")
     
     def spawn_enemies(self):
         """Spawn enemies with sprite animations."""
@@ -327,7 +333,7 @@ class MazeTowerDefenseGame:
                 
                 # Can only build towers before wave starts
                 if self.wave_in_progress and self.build_mode in self.tower_types:
-                    self.ui.status_label.config(text="Không thể xây tháp khi làn sóng đang diễn ra!")
+                    self.ui.status_label.configure(text="Không thể xây tháp khi làn sóng đang diễn ra!")
                     return
                 
                 # Build/delete tower based on build_mode
@@ -337,7 +343,7 @@ class MazeTowerDefenseGame:
                         test_maze = [row[:] for row in self.maze]
                         test_maze[grid_y][grid_x] = 2
                         if not find_path(test_maze, self.grid_size, self.selected_algo.get()):
-                            self.ui.status_label.config(text="Không thể xây tháp ở đây vì sẽ chặn hết đường đi!")
+                            self.ui.status_label.configure(text="Không thể xây tháp ở đây vì sẽ chặn hết đường đi!")
                             return
                         self.add_tower(grid_x, grid_y, self.build_mode)
                         self.money -= self.tower_types[self.build_mode]["cost"]
@@ -381,11 +387,11 @@ class MazeTowerDefenseGame:
         # Update the status label with hover information
         if 0 <= grid_x < self.grid_size and 0 <= grid_y < self.grid_size:
             if (grid_x, grid_y) == (0, 0):
-                self.ui.status_label.config(text="Điểm Xuất Phát (Kẻ địch)")
+                self.ui.status_label.configure(text="Điểm Xuất Phát (Kẻ địch)")
             elif (grid_x, grid_y) == (self.grid_size-1, self.grid_size-1):
-                self.ui.status_label.config(text="Điểm Đích (Bảo vệ đây!)")
+                self.ui.status_label.configure(text="Điểm Đích (Bảo vệ đây!)")
             elif self.maze[grid_y][grid_x] == 1:
-                self.ui.status_label.config(text="Tường (Không thể xây tháp)")
+                self.ui.status_label.configure(text="Tường (Không thể xây tháp)")
             elif self.maze[grid_y][grid_x] == 2:
                 # Find the tower at this position
                 for tower in self.towers:
@@ -393,7 +399,7 @@ class MazeTowerDefenseGame:
                         tower_type = tower['type']
                         tower_info = self.tower_types[tower_type]
                         status = f"{tower_info['name']} | DMG: {tower['damage']} | RNG: {tower['range']}"
-                        self.ui.status_label.config(text=status)
+                        self.ui.status_label.configure(text=status)
                         tower['show_range'] = True
                         # Redraw to show range
                         self.ui.draw_maze()
@@ -405,9 +411,9 @@ class MazeTowerDefenseGame:
                 
                 if hasattr(self, 'build_mode') and self.build_mode in self.tower_types:
                     tower = self.tower_types[self.build_mode]
-                    self.ui.status_label.config(text=f"Xây {tower['name']} tại ({grid_x}, {grid_y})")
+                    self.ui.status_label.configure(text=f"Xây {tower['name']} tại ({grid_x}, {grid_y})")
                 else:
-                    self.ui.status_label.config(text=f"Ô trống tại ({grid_x}, {grid_y})")
+                    self.ui.status_label.configure(text=f"Ô trống tại ({grid_x}, {grid_y})")
 
     def show_help(self):
         help_text = """
@@ -427,16 +433,37 @@ class MazeTowerDefenseGame:
         - Tháp Bắn Tỉa rất mạnh nhưng đắt, sử dụng hợp lý
         """
         
-        help_window = tk.Toplevel(self.root)
+        help_window = ctk.CTkToplevel(self.root)
         help_window.title("Hướng Dẫn")
-        help_window.geometry("400x350")
+        help_window.geometry("400x500")
         
-        text_widget = tk.Text(help_window, wrap=tk.WORD, padx=10, pady=10)
-        text_widget.pack(fill=tk.BOTH, expand=True)
-        text_widget.insert(tk.END, help_text)
-        text_widget.config(state=tk.DISABLED)
+        # Tạo frame chứa nội dung với màu nền sáng
+        content_frame = ctk.CTkFrame(help_window, fg_color=("#F5F5F5", "#F5F5F5"))
+        content_frame.pack(fill="both", expand=True, padx=10, pady=10)
         
-        ttk.Button(help_window, text="Đóng", command=help_window.destroy).pack(pady=10)
+        # Tiêu đề với màu xanh lá
+        ctk.CTkLabel(content_frame, 
+                    text="HƯỚNG DẪN GAME", 
+                    font=ctk.CTkFont(size=24, weight="bold"),
+                    text_color="#2E7D32").pack(pady=10)
+        
+        # Nội dung hướng dẫn với màu nền trắng
+        text_box = ctk.CTkTextbox(content_frame, 
+                                 wrap="word",
+                                 fg_color=("#FFFFFF", "#FFFFFF"),
+                                 text_color="#1B5E20",
+                                 font=ctk.CTkFont(size=14))
+        text_box.pack(fill="both", expand=True, padx=10, pady=10)
+        text_box.insert("1.0", help_text)
+        text_box.configure(state="disabled")
+        
+        # Nút đóng với màu xanh dương
+        ctk.CTkButton(content_frame, 
+                     text="Đóng",
+                     font=ctk.CTkFont(size=14, weight="bold"),
+                     fg_color="#2196F3",
+                     hover_color="#1976D2",
+                     command=help_window.destroy).pack(pady=10)
 
     def set_build_mode(self, mode):
         self.build_mode = mode
@@ -450,8 +477,8 @@ class MazeTowerDefenseGame:
             info_text += f"Tốc độ bắn: {100/tower['fire_rate']:.1f}/s\n\n"
             info_text += f"{tower['description']}"
             
-            self.ui.tower_info_label.config(text=info_text)
+            self.ui.tower_info_label.configure(text=info_text)
         elif mode == "delete":
-            self.ui.tower_info_label.config(text="Chọn tháp để xóa và nhận lại 5$")
+            self.ui.tower_info_label.configure(text="Chọn tháp để xóa và nhận lại 5$")
         else:
-            self.ui.tower_info_label.config(text="Chọn tháp để xem thông tin chi tiết")
+            self.ui.tower_info_label.configure(text="Chọn tháp để xem thông tin chi tiết")
