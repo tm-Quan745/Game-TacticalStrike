@@ -29,7 +29,8 @@ class MazeTowerDefenseGame:
         self.selected_algo = tk.StringVar(value="BFS")
         self.score = 0
         self.build_mode = None
-
+        self.sprite_path = "./sprites/"
+        
         # Tower info
         self.tower_types = {
             "shooter": {
@@ -85,9 +86,8 @@ class MazeTowerDefenseGame:
         
         try:
             # Load projectile sprites
-            sprite_path = "./sprites/"
-            shoot_right = Image.open(f"{sprite_path}shoot_right.png")
-            shoot_left = Image.open(f"{sprite_path}shoot_left.png")
+            shoot_right = Image.open(f"{self.sprite_path}shoot_right.png")
+            shoot_left = Image.open(f"{self.sprite_path}shoot_left.png")
             
             # Resize projectile sprites
             shoot_right = shoot_right.resize((16, 16), Image.Resampling.LANCZOS) 
@@ -97,7 +97,7 @@ class MazeTowerDefenseGame:
                 'shoot_right': ImageTk.PhotoImage(shoot_right),
                 'shoot_left': ImageTk.PhotoImage(shoot_left)
             }
-            print(f"Loaded projectile sprites from {sprite_path}")
+            print(f"Loaded projectile sprites from {self.sprite_path}")
             
         except Exception as e:
             print(f"Error loading projectile sprites: {e}")
@@ -221,11 +221,23 @@ class MazeTowerDefenseGame:
                             enemy['frozen'] = True
                             enemy['freeze_timer'] = 100
 
+                        # Kiểm tra enemy chết và xử lý
                         if enemy['health'] <= 0:
                             self.money += enemy['reward']
                             self.score += enemy['reward']
+                            
+                            # Xóa sprite của enemy
+                            sprite_ids = self.ui.canvas.find_closest(enemy['x'], enemy['y'])
+                            for sprite_id in sprite_ids:
+                                self.ui.canvas.delete(sprite_id)
+                            
+                            # Xóa enemy khỏi danh sách    
                             self.enemies.remove(enemy)
                             self.ui.update_info_labels()
+
+                        # Xóa projectile sau khi hit enemy
+                        if projectile in self.projectiles:
+                            self.projectiles.remove(projectile)
                         break
 
     
@@ -247,14 +259,13 @@ class MazeTowerDefenseGame:
         """Spawn enemies with sprite animations."""
         try:
             if not hasattr(self, 'enemy_sprites'):
-                sprite_path = "./sprites/"
                 
                 # Load sprites
-                walk_right = self.ui.load_sprites(f"{sprite_path}walkright.png", 4)
-                walk_left = self.ui.load_sprites(f"{sprite_path}walkleft.png", 4) 
-                walk_updown = self.ui.load_sprites(f"{sprite_path}walkup.png", 4)
-                shoot_right = self.ui.load_sprites(f"{sprite_path}shoot_right.png", 4)
-                shoot_left = self.ui.load_sprites(f"{sprite_path}shoot_left.png", 4)
+                walk_right = self.ui.load_sprites(f"{self.sprite_path}walkright.png", 4)
+                walk_left = self.ui.load_sprites(f"{self.sprite_path}walkleft.png", 4) 
+                walk_updown = self.ui.load_sprites(f"{self.sprite_path}walkup.png", 4)
+                shoot_right = self.ui.load_sprites(f"{self.sprite_path}shoot_right.png", 4)
+                shoot_left = self.ui.load_sprites(f"{self.sprite_path}shoot_left.png", 4)
                 
                 self.enemy_sprites = {
                     'walk_right': walk_right,
@@ -263,7 +274,7 @@ class MazeTowerDefenseGame:
                     'shoot_right': shoot_right,
                     'shoot_left': shoot_left
                 }
-            projectile_sprite = Image.open(f"{sprite_path}grass3.png")
+            projectile_sprite = Image.open(f"{self.sprite_path}grass3.png")
             projectile_sprite = projectile_sprite.resize((16, 16))
             self.enemy_projectile_sprite = ImageTk.PhotoImage(projectile_sprite)
         except Exception as e:

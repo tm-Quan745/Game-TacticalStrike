@@ -222,7 +222,7 @@ class Enemy:
 
 class Projectile:
     @staticmethod
-    def create(start_x, start_y, target_x, target_y, damage, tower_type, target_enemy):
+    def create(start_x, start_y, target_x, target_y, damage, tower_type, target_enemy,sprite=None):
         return {
             'x': start_x,
             'y': start_y,
@@ -233,7 +233,8 @@ class Projectile:
             'damage': damage,
             'tower_type': tower_type,
             'target_enemy': target_enemy,  # Track target enemy
-            'speed': 8  # Increased speed
+            'speed': 8,  # Increased speed
+            'sprite': None
         }
 
     @staticmethod
