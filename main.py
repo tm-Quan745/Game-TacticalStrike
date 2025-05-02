@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from game_logic import MazeTowerDefenseGame
+from loading_screen import LoadingScreen
 
 def main():
     # Set up the appearance mode and default color theme
@@ -11,8 +11,8 @@ def main():
     root.title("Mê Cung Tower Defense")
     root.geometry("1200x800")  # Set initial window size
     
-    # Create game instance
-    game = MazeTowerDefenseGame(root)
+    # Create loading screen
+    loading_screen = LoadingScreen(root)
     
     # Start the game loop
     root.mainloop()
