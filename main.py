@@ -1,22 +1,20 @@
-import tkinter as tk
-from tkinter import ttk
-from ui import GameUI
-from game_logic import MazeTowerDefenseGame
+import customtkinter as ctk
+from loading_screen import LoadingScreen
 
 def main():
-    root = tk.Tk()
+    # Set up the appearance mode and default color theme
+    ctk.set_appearance_mode("light")  # Modes: "dark", "light"
+    ctk.set_default_color_theme("green")  # Themes: "blue", "green", "dark-blue"
+    
+    # Create the main window
+    root = ctk.CTk()
     root.title("Mê Cung Tower Defense")
+    root.geometry("1200x800")  # Set initial window size
     
-    # Configure styles
-    style = ttk.Style()
-    style.configure('TButton', font=('Arial', 10, 'bold'))
-    style.configure('TLabel', font=('Arial', 10))
-    style.configure('Title.TLabel', font=('Arial', 12, 'bold'))
+    # Create loading screen
+    loading_screen = LoadingScreen(root)
     
-    # Create game instance
-    game = MazeTowerDefenseGame(root)
-    
-    # Start game loop
+    # Start the game loop
     root.mainloop()
 
 if __name__ == "__main__":
