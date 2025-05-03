@@ -81,7 +81,7 @@ class GameUI:
         
         # Game title
         title_label = ctk.CTkLabel(game_frame, text="MÊ CUNG TOWER DEFENSE",
-                                font=ctk.CTkFont(size=24, weight="bold"),
+                                font=ctk.CTkFont(family="Minecraft", size=24, weight="bold"),
                                 text_color="#2E7D32")
         title_label.pack(pady=(0, 10))
         
@@ -100,7 +100,7 @@ class GameUI:
         
         self.status_label = ctk.CTkLabel(status_frame, 
                                       text="Hãy xây tháp và bắt đầu!",
-                                      font=ctk.CTkFont(size=14),
+                                      font=ctk.CTkFont(family="Minecraft", size=14),
                                       text_color="#1B5E20")
         self.status_label.pack(side=tk.LEFT, padx=10)
 
@@ -125,7 +125,7 @@ class GameUI:
         self.algorithm_button = ctk.CTkButton(
             buttons_frame, 
             text=f"Thuật Toán: {self.game.selected_algo.get()}",
-            font=ctk.CTkFont(size=14, weight="bold"),
+            font=ctk.CTkFont(family="Minecraft", size=14, weight="bold"),
             fg_color="#673AB7",
             hover_color="#512DA8",
             command=self.show_algorithm_selector
@@ -136,7 +136,7 @@ class GameUI:
         self.start_button = ctk.CTkButton(
             buttons_frame,
             text="Bắt Đầu Làn Sóng",
-            font=ctk.CTkFont(size=14, weight="bold"),
+            font=ctk.CTkFont(family="Minecraft", size=14, weight="bold"),
             fg_color="#4CAF50",
             hover_color="#388E3C",
             command=self.game.start_wave
@@ -147,7 +147,7 @@ class GameUI:
         ctk.CTkButton(
             buttons_frame,
             text="Tạo Mê Cung Mới",
-            font=ctk.CTkFont(size=14, weight="bold"),
+            font=ctk.CTkFont(family="Minecraft", size=14, weight="bold"),
             fg_color="#2196F3",
             hover_color="#1976D2",
             corner_radius=10,
@@ -161,7 +161,7 @@ class GameUI:
         info_title = ctk.CTkLabel(
             info_frame,
             text="Thông Tin",
-            font=ctk.CTkFont(size=18, weight="bold"),
+            font=ctk.CTkFont(family="Minecraft", size=18, weight="bold"),
             text_color="#2E7D32"
         )
         info_title.pack(pady=5)
@@ -170,7 +170,7 @@ class GameUI:
         self.money_label = ctk.CTkLabel(
             info_frame,
             text=f"Tiền: {self.game.money}$",
-            font=ctk.CTkFont(size=14),
+            font=ctk.CTkFont(family="Minecraft", size=14),
             text_color="#1B5E20"
         )
         self.money_label.pack(anchor=tk.W, padx=5, pady=2)
@@ -178,7 +178,7 @@ class GameUI:
         self.lives_label = ctk.CTkLabel(
             info_frame,
             text=f"Mạng: {self.game.lives}",
-            font=ctk.CTkFont(size=14),
+            font=ctk.CTkFont(family="Minecraft", size=14),
             text_color="#1B5E20"
         )
         self.lives_label.pack(anchor=tk.W, padx=5, pady=2)
@@ -186,7 +186,7 @@ class GameUI:
         self.wave_label = ctk.CTkLabel(
             info_frame,
             text=f"Làn sóng: {self.game.current_wave}",
-            font=ctk.CTkFont(size=14),
+            font=ctk.CTkFont(family="Minecraft", size=14),
             text_color="#1B5E20"
         )
         self.wave_label.pack(anchor=tk.W, padx=5, pady=2)
@@ -194,7 +194,7 @@ class GameUI:
         self.score_label = ctk.CTkLabel(
             info_frame,
             text=f"Điểm: {self.game.score}",
-            font=ctk.CTkFont(size=14),
+            font=ctk.CTkFont(family="Minecraft", size=14),
             text_color="#1B5E20"
         )
         self.score_label.pack(anchor=tk.W, padx=5, pady=2)
@@ -206,7 +206,7 @@ class GameUI:
         tower_title = ctk.CTkLabel(
             tower_frame,
             text="Xây Tháp",
-            font=ctk.CTkFont(size=18, weight="bold"),
+            font=ctk.CTkFont(family="Minecraft", size=18, weight="bold"),
             text_color="#1565C0"
         )
         tower_title.pack(pady=5)
@@ -237,14 +237,14 @@ class GameUI:
             ctk.CTkLabel(
                 info_frame,
                 text=f"{tower_info['name']}",
-                font=ctk.CTkFont(size=13, weight="bold"),
+                font=ctk.CTkFont(family="Minecraft", size=13, weight="bold"),
                 text_color="#1B5E20"
             ).pack(anchor=tk.W)
             
             ctk.CTkLabel(
                 info_frame,
                 text=f"Giá: {tower_info['cost']}$",
-                font=ctk.CTkFont(size=12),
+                font=ctk.CTkFont(family="Minecraft", size=12),
                 text_color="#1B5E20"
             ).pack(anchor=tk.W)
             
@@ -256,7 +256,7 @@ class GameUI:
             ctk.CTkLabel(
                 stats_frame,
                 text=f"💥 {tower_info['damage']} | 🎯 {tower_info['range']} | ⚡ {100/tower_info['fire_rate']:.1f}/s",
-                font=ctk.CTkFont(size=11),
+                font=ctk.CTkFont(family="Minecraft", size=11),
                 text_color="#666666"
             ).pack(anchor=tk.W)
             
@@ -266,7 +266,7 @@ class GameUI:
                 text="Xây",
                 width=60,
                 height=32,
-                font=ctk.CTkFont(size=13),
+                font=ctk.CTkFont(family="Minecraft", size=13),
                 fg_color=tower_info["color"],
                 hover_color="#424242",
                 command=lambda t=tower_key: self.game.set_build_mode(t)
@@ -297,7 +297,7 @@ class GameUI:
         ctk.CTkLabel(
             delete_frame,
             text="Xóa Tháp\nHoàn lại 5$",
-            font=ctk.CTkFont(size=12),
+            font=ctk.CTkFont(family="Minecraft", size=12),
             text_color="#D32F2F"
         ).pack(side=tk.LEFT, padx=5)
         
@@ -315,7 +315,7 @@ class GameUI:
         ctk.CTkButton(
             control_scroll,
             text="Hướng Dẫn",
-            font=ctk.CTkFont(size=14),
+            font=ctk.CTkFont(family="Minecraft", size=14),
             fg_color="#03A9F4",
             hover_color="#0288D1",
             corner_radius=10,
@@ -377,7 +377,7 @@ class GameUI:
         )
         self.canvas.create_text(
             self.game.cell_size/2, self.game.cell_size/2,
-            text="S", fill="white", font=("Arial", 12, "bold"),
+            text="S", fill="white", font=("Minecraft", 12, "bold"),
             tags="terrain"
         )
         
@@ -392,7 +392,7 @@ class GameUI:
         self.canvas.create_text(
             (self.game.grid_size-0.5) * self.game.cell_size,
             (self.game.grid_size-0.5) * self.game.cell_size,
-            text="E", fill="white", font=("Arial", 12, "bold"),
+            text="E", fill="white", font=("Minecraft", 12, "bold"),
             tags="terrain"
         )
         
@@ -494,7 +494,7 @@ class GameUI:
                         enemy['y'] - 25,  # Đẩy text damage lên cao hơn
                         text=str(enemy['damage_text']),
                         fill="red",
-                        font=("Arial", 10, "bold"),
+                        font=("Minecraft", 10, "bold"),
                         tags="damage_text"
                     )
         
