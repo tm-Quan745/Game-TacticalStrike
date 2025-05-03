@@ -6,7 +6,6 @@ class GameUI:
     def __init__(self, root, game):
         self.root = root
         self.game = game
-        
         # Load tile sprites
         try:
             grass = Image.open("./sprites/grass.png")
@@ -19,6 +18,8 @@ class GameUI:
             ice = Image.open("./sprites/grass2.png")
             sniper = Image.open("./sprites/grass3.png")
             bullet = Image.open("./sprites/land1.jpg")
+            enemy_projectile = Image.open("./sprites/grass4.jpg")
+            
             
             # Resize sprites
             grass = grass.resize((game.cell_size, game.cell_size), Image.Resampling.LANCZOS)
@@ -29,7 +30,7 @@ class GameUI:
             bullet = bullet.resize((16, 16), Image.Resampling.LANCZOS)
             ice = ice.resize((16, 16), Image.Resampling.LANCZOS)
             sniper = sniper.resize((16, 16), Image.Resampling.LANCZOS)
-
+            enemy_projectile = enemy_projectile.resize((16, 16), Image.Resampling.LANCZOS)
             self.tile_sprites = {
                 'grass': ImageTk.PhotoImage(grass),
                 'land': ImageTk.PhotoImage(land),
@@ -46,6 +47,13 @@ class GameUI:
                 'freezer': ImageTk.PhotoImage(ice),
                 'sniper': ImageTk.PhotoImage(sniper)
             }
+            
+            self.enemy_projectile_frames = []
+            rotated_bullet = enemy_projectile
+            for i in range(4):  # Create 4 rotation frames
+                self.enemy_projectile_frames.append(ImageTk.PhotoImage(rotated_bullet))
+                rotated_bullet = rotated_bullet.rotate(90)
+            
         except Exception as e:
             print(f"Error loading sprites: {e}")
             self.tile_sprites = {
@@ -313,6 +321,19 @@ class GameUI:
             corner_radius=10,
             command=self.game.show_help
         ).pack(fill=tk.X, padx=5, pady=10)
+        
+        tower_frame = ctk.CTkFrame(control_scroll, fg_color=("#E3F2FD", "#E3F2FD"))
+        tower_frame.pack(fill=tk.X, pady=5, padx=5)
+        
+        # Add tower info label here
+        self.tower_info_label = ctk.CTkLabel(
+            tower_frame,
+            text="",
+            width=200,
+            wraplength=180,
+            justify="left"
+        )
+        self.tower_info_label.pack(pady=10)
     
     def update_info_labels(self):
         """Update all information labels with current game state."""

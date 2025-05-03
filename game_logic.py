@@ -4,7 +4,7 @@ from tkinter import messagebox, ttk
 import tkinter as tk
 from maze_generator import generate_maze
 from pathfinding import find_path
-from entities import Tower, Enemy, Projectile
+from entities import Tower, Enemy, Projectile,EnemyProjectile
 from PIL import Image, ImageTk
 import customtkinter as ctk
 
@@ -30,6 +30,7 @@ class MazeTowerDefenseGame:
         self.score = 0
         self.build_mode = None
         self.sprite_path = "./sprites/"
+        self.enemy_projectiles = []
         
         # Tower info
         self.tower_types = {
@@ -88,6 +89,7 @@ class MazeTowerDefenseGame:
             # Load projectile sprites
             shoot_right = Image.open(f"{self.sprite_path}shoot_right.png")
             shoot_left = Image.open(f"{self.sprite_path}shoot_left.png")
+            projectile_sprite = Image.open(f"{self.sprite_path}grass3.png")
             
             # Resize projectile sprites
             shoot_right = shoot_right.resize((16, 16), Image.Resampling.LANCZOS) 
@@ -98,7 +100,10 @@ class MazeTowerDefenseGame:
                 'shoot_left': ImageTk.PhotoImage(shoot_left)
             }
             print(f"Loaded projectile sprites from {self.sprite_path}")
-            
+            self.enemy_projectile_frames = []
+            for i in range(4):
+                rotated = projectile_sprite.rotate(90 * i)
+                self.enemy_projectile_frames.append(ImageTk.PhotoImage(rotated))
         except Exception as e:
             print(f"Error loading projectile sprites: {e}")
             placeholder = Image.new('RGBA', (16, 16), 'yellow')
@@ -106,6 +111,7 @@ class MazeTowerDefenseGame:
                 'shoot_right': ImageTk.PhotoImage(placeholder),
                 'shoot_left': ImageTk.PhotoImage(placeholder)
             }
+        
         
         # Initialize UI (needs to be imported here to avoid circular imports)
         from ui import GameUI
@@ -181,6 +187,7 @@ class MazeTowerDefenseGame:
         self.update_towers(dt)
         self.update_projectiles(dt)
         self.check_wave_end()
+        self.update_enemy_projectiles(dt)
         
         # Update UI
         self.ui.draw_maze()
@@ -240,6 +247,59 @@ class MazeTowerDefenseGame:
                             self.projectiles.remove(projectile)
                         break
 
+    def update_enemy_projectiles(self, dt):
+        for projectile in self.enemy_projectiles[:]:
+            # Add movement calculation
+            dx = projectile['target_x'] - projectile['x']
+            dy = projectile['target_y'] - projectile['y']
+            length = (dx**2 + dy**2)**0.5
+            
+            if length > 0:
+                # Move projectile
+                speed = 200
+                projectile['x'] += (dx/length) * speed * dt
+                projectile['y'] += (dy/length) * speed * dt
+                
+                # Update sprite position
+                self.ui.canvas.coords(projectile['sprite'], 
+                                    projectile['x'],
+                                    projectile['y'])
+
+            # Animation update
+            projectile['animation_timer'] = projectile.get('animation_timer', 0) + dt
+            if projectile['animation_timer'] >= 0.1:
+                projectile['animation_timer'] = 0
+                current_frame = projectile.get('current_frame', 0)
+                next_frame = (current_frame + 1) % len(self.enemy_projectile_frames)
+                projectile['current_frame'] = next_frame
+                
+                # Update sprite image
+                self.ui.canvas.itemconfig(
+                    projectile['sprite'],
+                    image=self.enemy_projectile_frames[next_frame]
+                )
+                
+            # Check if projectile has reached target
+            if length < 5:
+                self.ui.canvas.delete(projectile['sprite'])
+                self.enemy_projectiles.remove(projectile)
+            for tower in self.towers[:]:
+                tower_x = tower['x'] * self.cell_size + self.cell_size/2
+                tower_y = tower['y'] * self.cell_size + self.cell_size/2
+                
+                if (abs(projectile['x'] - tower_x) < self.cell_size/2 and
+                    abs(projectile['y'] - tower_y) < self.cell_size/2):
+                    # Hit tower
+                    if 'health' in tower:
+                        tower['health'] -= projectile['damage']
+                        if tower['health'] <= 0:
+                            self.towers.remove(tower)
+                            self.maze[tower['y']][tower['x']] = 0
+                    
+                    # Remove projectile
+                    self.ui.canvas.delete(projectile['sprite'])
+                    self.enemy_projectiles.remove(projectile)
+                    break
     
     def check_wave_end(self):
         if self.wave_in_progress and not self.enemies:
@@ -274,9 +334,9 @@ class MazeTowerDefenseGame:
                     'shoot_right': shoot_right,
                     'shoot_left': shoot_left
                 }
-            projectile_sprite = Image.open(f"{self.sprite_path}grass3.png")
-            projectile_sprite = projectile_sprite.resize((16, 16))
-            self.enemy_projectile_sprite = ImageTk.PhotoImage(projectile_sprite)
+            # projectile_sprite = Image.open(f"{self.sprite_path}grass3.png")
+            # projectile_sprite = projectile_sprite.resize((16, 16))
+            # self.enemy_projectile_sprite = ImageTk.PhotoImage(projectile_sprite)
         except Exception as e:
             print(f"Error loading sprites: {e}")
             # Create placeholder sprites if loading fails
@@ -426,6 +486,8 @@ class MazeTowerDefenseGame:
                 else:
                     self.ui.status_label.configure(text=f"Ô trống tại ({grid_x}, {grid_y})")
 
+
+    
     def show_help(self):
         help_text = """
         Hướng Dẫn Chơi:
@@ -479,17 +541,23 @@ class MazeTowerDefenseGame:
     def set_build_mode(self, mode):
         self.build_mode = mode
         
-        # Update the tower info display
-        if mode in self.tower_types:
-            tower = self.tower_types[mode]
-            info_text = f"{tower['name']}\n\n"
-            info_text += f"Sát thương: {tower['damage']}\n"
-            info_text += f"Tầm bắn: {tower['range']} ôn\n"
-            info_text += f"Tốc độ bắn: {100/tower['fire_rate']:.1f}/s\n\n"
-            info_text += f"{tower['description']}"
-            
-            self.ui.tower_info_label.configure(text=info_text)
-        elif mode == "delete":
-            self.ui.tower_info_label.configure(text="Chọn tháp để xóa và nhận lại 5$")
-        else:
-            self.ui.tower_info_label.configure(text="Chọn tháp để xem thông tin chi tiết")
+        try:
+            # Update the tower info display
+            if mode in self.tower_types:
+                tower = self.tower_types[mode]
+                info_text = f"{tower['name']}\n\n"
+                info_text += f"Sát thương: {tower['damage']}\n"
+                info_text += f"Tầm bắn: {tower['range']} ô\n"
+                info_text += f"Tốc độ bắn: {100/tower['fire_rate']:.1f}/s\n\n"
+                info_text += f"{tower['description']}"
+                
+                if hasattr(self.ui, 'tower_info_label'):
+                    self.ui.tower_info_label.configure(text=info_text)
+            elif mode == "delete":
+                if hasattr(self.ui, 'tower_info_label'):
+                    self.ui.tower_info_label.configure(text="Chọn tháp để xóa và nhận lại 5$")
+            else:
+                if hasattr(self.ui, 'tower_info_label'):
+                    self.ui.tower_info_label.configure(text="Chọn tháp để xem thông tin chi tiết")
+        except Exception as e:
+            print(f"Error updating tower info: {e}")

@@ -169,14 +169,14 @@ class Enemy:
                 enemy['target_x'] = next_point[0] * cell_size + cell_size/2
                 enemy['target_y'] = next_point[1] * cell_size + cell_size/2
                 
-                # Calculate movement vector
+                # Calculate movement ve ctor
                 dx = enemy['target_x'] - enemy['x']
                 dy = enemy['target_y'] - enemy['y']
                 dist = math.sqrt(dx*dx + dy*dy)
                 
                 if dist < speed * dt:
                     # Đã đến điểm tiếp theo
-                    enemy['x'] = enemy['target_x']
+                    enemy['x'] = enemy['target_x']        
                     enemy['y'] = enemy['target_y']
                     enemy['path_position'] += 1
                     
@@ -196,6 +196,35 @@ class Enemy:
                     enemy['direction'] = 'walk_right' if dx > 0 else 'walk_left'
                 else:
                     enemy['direction'] = 'walk_updown'
+                    
+         # Handle shooting
+        enemy['shoot_cooldown'] = enemy.get('shoot_cooldown', 0) - dt
+        if enemy['shoot_cooldown'] <= 0:
+            # Find nearest tower to shoot at
+            nearest_tower = None
+            min_dist = float('inf')
+            for tower in game.towers:
+                dx = tower['x'] * cell_size - enemy['x']
+                dy = tower['y'] * cell_size - enemy['y']
+                dist = (dx**2 + dy**2)**0.5
+                if dist < min_dist:
+                    min_dist = dist
+                    nearest_tower = tower
+                    
+            if nearest_tower and min_dist < cell_size * 5:  # Shooting range
+                projectile = EnemyProjectile.create(
+                    enemy['x'], enemy['y'],
+                    nearest_tower['x'] * cell_size + cell_size/2,
+                    nearest_tower['y'] * cell_size + cell_size/2,
+                    1  # Damage value
+                )
+                projectile['sprite'] = canvas.create_image(
+                    enemy['x'], enemy['y'],
+                    image=game.ui.enemy_projectile_frames[0],
+                    anchor='center'
+                )
+                game.enemy_projectiles.append(projectile)
+                enemy['shoot_cooldown'] = 2  # Reset cooldown
         
                 
 
@@ -262,3 +291,56 @@ class Projectile:
         dist = ((projectile['target_x'] - projectile['x'])**2 + 
                 (projectile['target_y'] - projectile['y'])**2)**0.5
         return dist > 5
+    
+class EnemyProjectile:
+    @staticmethod
+    def create(start_x, start_y, target_x, target_y, damage):
+        return {
+            'x': start_x,
+            'y': start_y,
+            'target_x': target_x,
+            'target_y': target_y,
+            'dx': 0,
+            'dy': 0,
+            'damage': damage,
+            'speed': 5,
+            'sprite': None,
+            'animation_frame': 0,
+            'animation_timer': 0
+        }
+
+    @staticmethod
+    def update(projectile, dt, canvas, game):  # Thêm tham số game
+        # Update position
+        dx = projectile['target_x'] - projectile['x']
+        dy = projectile['target_y'] - projectile['y']
+        length = (dx**2 + dy**2)**0.5
+        
+        if length > 0:
+            speed = 200  # Tăng tốc độ đạn
+            projectile['dx'] = (dx/length) * speed
+            projectile['dy'] = (dy/length) * speed
+            
+            projectile['x'] += projectile['dx'] * dt
+            projectile['y'] += projectile['dy'] * dt
+            
+            # Update sprite position
+            if projectile['sprite']:
+                canvas.coords(projectile['sprite'], 
+                            projectile['x'],
+                            projectile['y'])
+                
+                # Update animation frame
+                projectile['animation_timer'] = projectile.get('animation_timer', 0) + dt
+                if projectile['animation_timer'] >= 0.1:
+                    projectile['animation_timer'] = 0
+                    frame = projectile.get('current_frame', 0)
+                    next_frame = (frame + 1) % len(game.ui.enemy_projectile_frames)
+                    projectile['current_frame'] = next_frame
+                    
+                    canvas.itemconfig(
+                        projectile['sprite'],
+                        image=game.ui.enemy_projectile_frames[next_frame]
+                    )
+        
+        return length > 5
