@@ -8,8 +8,8 @@ class GameUI:
         self.game = game
         # Load tile sprites
         try:
-            grass = Image.open("./sprites/grass.png")
-            land = Image.open("./sprites/land.png")
+            grass = Image.open("./sprites/wall.png")
+            land = Image.open("./sprites/floor.png")
             # Add tower sprites loading
             shooter_tower = Image.open("./sprites/grass4.jpg")  # Tháp bắn
             freezer_tower = Image.open("./sprites/grass5.jpg")  # Tháp đóng băng
@@ -53,6 +53,47 @@ class GameUI:
             for i in range(4):  # Create 4 rotation frames
                 self.enemy_projectile_frames.append(ImageTk.PhotoImage(rotated_bullet))
                 rotated_bullet = rotated_bullet.rotate(90)
+            
+            # Load tower sprites
+            tower_size = (32, 32)  # Kích thước tower
+            
+            shooter = Image.open("./sprites/shooter_tower.png")
+            shooter = shooter.resize(tower_size, Image.Resampling.LANCZOS)
+            self.shooter_sprite = ImageTk.PhotoImage(shooter)
+            
+            freezer = Image.open("./sprites/freezer_tower.png")
+            freezer = freezer.resize(tower_size, Image.Resampling.LANCZOS)
+            self.freezer_sprite = ImageTk.PhotoImage(freezer)
+            
+            sniper = Image.open("./sprites/sniper_tower.png") 
+            sniper = sniper.resize(tower_size, Image.Resampling.LANCZOS)
+            self.sniper_sprite = ImageTk.PhotoImage(sniper)
+            
+            # Dictionary để map loại tower với sprite tương ứng
+            self.tower_sprites = {
+                "shooter": self.shooter_sprite,
+                "freezer": self.freezer_sprite,
+                "sniper": self.sniper_sprite
+            }
+            
+            # Create tower animation frames (optional)
+            self.tower_animation_frames = {
+                "shooter": [ImageTk.PhotoImage(shooter_tower.resize(tower_size).rotate(angle)) 
+                           for angle in range(0, 360, 45)],
+                "freezer": [ImageTk.PhotoImage(freezer_tower.resize(tower_size).rotate(angle)) 
+                           for angle in range(0, 360, 45)],
+                "sniper": [ImageTk.PhotoImage(sniper_tower.resize(tower_size).rotate(angle)) 
+                          for angle in range(0, 360, 45)]
+            }
+            
+            # Load start and end point sprites
+            castle = Image.open("./sprites/castle.png")
+            camp = Image.open("./sprites/camp.png")
+            
+            # Resize to fit cell size
+            point_size = (self.game.cell_size, self.game.cell_size)
+            self.start_sprite = ImageTk.PhotoImage(camp.resize(point_size, Image.Resampling.LANCZOS))
+            self.end_sprite = ImageTk.PhotoImage(castle.resize(point_size, Image.Resampling.LANCZOS))
             
         except Exception as e:
             print(f"Error loading sprites: {e}")
@@ -369,62 +410,50 @@ class GameUI:
                         tags="terrain"
                     )
         
-        # Mark start and end points
-        self.canvas.create_rectangle(
-            0, 0, self.game.cell_size, self.game.cell_size,
-            fill="#4caf50", outline="#2e7d32",
-            tags="terrain"
-        )
-        self.canvas.create_text(
-            self.game.cell_size/2, self.game.cell_size/2,
-            text="S", fill="white", font=("Minecraft", 12, "bold"),
+        # Replace rectangle markers with sprites for start and end points
+        self.canvas.create_image(
+            self.game.cell_size/2,  # Center of first cell
+            self.game.cell_size/2,
+            image=self.start_sprite,
+            anchor='center',
             tags="terrain"
         )
         
-        self.canvas.create_rectangle(
-            (self.game.grid_size-1) * self.game.cell_size,
-            (self.game.grid_size-1) * self.game.cell_size,
-            self.game.grid_size * self.game.cell_size,
-            self.game.grid_size * self.game.cell_size,
-            fill="#f44336", outline="#c62828",
-            tags="terrain"
-        )
-        self.canvas.create_text(
-            (self.game.grid_size-0.5) * self.game.cell_size,
-            (self.game.grid_size-0.5) * self.game.cell_size,
-            text="E", fill="white", font=("Minecraft", 12, "bold"),
+        self.canvas.create_image(
+            (self.game.grid_size - 0.5) * self.game.cell_size,  # Center of last cell
+            (self.game.grid_size - 0.5) * self.game.cell_size,
+            image=self.end_sprite,
+            anchor='center',
             tags="terrain"
         )
         
-        # Draw towers with tag
+        # Draw towers with sprites
         for tower in self.game.towers:
             x, y = tower['x'], tower['y']
-            tower_info = self.game.tower_types[tower['type']]
-            color = tower_info["color"]
+            tower_type = tower['type']
             
-            # Tower base
-            self.canvas.create_rectangle(
-                x * self.game.cell_size + 2,
-                y * self.game.cell_size + 2,
-                (x + 1) * self.game.cell_size - 2,
-                (y + 1) * self.game.cell_size - 2,
-                fill="#607d8b", outline="#455a64",
-                tags="tower"
-            )
-            
-            # Tower top
-            self.canvas.create_oval(
-                x * self.game.cell_size + 6,
-                y * self.game.cell_size + 6,
-                (x + 1) * self.game.cell_size - 6,
-                (y + 1) * self.game.cell_size - 6,
-                fill=color, outline="black",
+            # Create tower sprite
+            self.canvas.create_image(
+                x * self.game.cell_size + self.game.cell_size/2,
+                y * self.game.cell_size + self.game.cell_size/2,
+                image=self.tower_sprites[tower_type],
+                anchor='center',
                 tags="tower"
             )
             
             # Show range when hovering or selected
             if (hasattr(self.game, 'build_mode') and 
                 self.game.build_mode == "delete") or tower.get('show_range', False):
+                # Set color based on tower type
+                if tower_type == 'shooter':
+                    color = 'red'  # Xanh cho shooter tower
+                elif tower_type == 'freezer':
+                    color = '#00bcd4'  # Xanh nhạt cho freezer tower
+                elif tower_type == 'sniper':
+                    color = '#9b59b6'  # Tím cho sniper tower
+                else:
+                    color = '#666666'  # Màu mặc định
+                    
                 self.canvas.create_oval(
                     x * self.game.cell_size - tower['range'] * self.game.cell_size + self.game.cell_size/2,
                     y * self.game.cell_size - tower['range'] * self.game.cell_size + self.game.cell_size/2,

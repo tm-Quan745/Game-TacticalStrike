@@ -217,18 +217,18 @@ class MazeTowerDefenseGame:
     def update_projectiles(self, dt):
         for projectile in self.projectiles[:]:
             if not Projectile.update(projectile, dt):
-                self.projectiles.remove(projectile)
+                # Check if projectile hit any enemy
+                hit_enemy = False
                 for enemy in self.enemies[:]:
                     if (abs(enemy['x'] - projectile['target_x']) < self.cell_size / 2 and
                         abs(enemy['y'] - projectile['target_y']) < self.cell_size / 2):
-
+                        hit_enemy = True
                         enemy['health'] -= projectile['damage']
 
                         if projectile['tower_type'] == 'freezer':
                             enemy['frozen'] = True
                             enemy['freeze_timer'] = 100
 
-                        # Kiểm tra enemy chết và xử lý
                         if enemy['health'] <= 0:
                             self.money += enemy['reward']
                             self.score += enemy['reward']
@@ -238,15 +238,14 @@ class MazeTowerDefenseGame:
                             for sprite_id in sprite_ids:
                                 self.ui.canvas.delete(sprite_id)
                             
-                            # Xóa enemy khỏi danh sách    
                             self.enemies.remove(enemy)
                             self.ui.update_info_labels()
-
-                        # Xóa projectile sau khi hit enemy
-                        if projectile in self.projectiles:
-                            self.projectiles.remove(projectile)
                         break
 
+                # Remove projectile whether it hit or missed
+                if projectile in self.projectiles:
+                    self.projectiles.remove(projectile)
+    
     def update_enemy_projectiles(self, dt):
         for projectile in self.enemy_projectiles[:]:
             # Add movement calculation
@@ -561,3 +560,34 @@ class MazeTowerDefenseGame:
                     self.ui.tower_info_label.configure(text="Chọn tháp để xem thông tin chi tiết")
         except Exception as e:
             print(f"Error updating tower info: {e}")
+
+    def build_tower(self, x, y, tower_type):
+        if self.can_build(x, y, tower_type):
+            # Create tower with sprite instead of oval
+            tower = {
+                'x': x,
+                'y': y,
+                'type': tower_type,
+                'damage': self.tower_types[tower_type]['damage'],
+                'range': self.tower_types[tower_type]['range'],
+                'fire_rate': self.tower_types[tower_type]['fire_rate'],
+                'attack_cooldown': 0
+            }
+            
+            # Create image instead of oval
+            sprite = self.ui.canvas.create_image(
+                x * self.cell_size + self.cell_size/2,
+                y * self.cell_size + self.cell_size/2,
+                image=self.ui.tower_sprites[tower_type],
+                anchor='center',
+                tags='tower'
+            )
+            
+            tower['sprite'] = sprite
+            self.towers.append(tower)
+            
+            # Update resources
+            self.money -= self.tower_types[tower_type]['cost']
+            self.ui.update_info_labels()
+            return True
+        return False
