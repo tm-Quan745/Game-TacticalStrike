@@ -4,29 +4,33 @@ from tkinter import messagebox, ttk
 import tkinter as tk
 from maze_generator import generate_maze
 from pathfinding import find_path
-from entities import Tower, Enemy, Projectile
+from entities import Tower, Enemy, Projectile,EnemyProjectile
 from PIL import Image, ImageTk
+import customtkinter as ctk
 
 class MazeTowerDefenseGame:
     def __init__(self, root):
         self.root = root
         
         # Game parameters
-        self.grid_size = 15
-        self.cell_size = 48  
+        self.grid_size = 13
+        self.cell_size = 45
+        self.initial_money = 100  # Add initial money value
+        self.initial_lives = 20   # Add initial lives value
         self.maze = []
         self.towers = []
         self.enemies = []
         self.paths = []
         self.projectiles = []
-        self.money = 100
-        self.lives = 20
+        self.money = self.initial_money
+        self.lives = self.initial_lives
         self.current_wave = 0
         self.wave_in_progress = False
         self.selected_algo = tk.StringVar(value="BFS")
         self.score = 0
         self.build_mode = None
-        self.game_speed = 1.0
+        self.sprite_path = "./sprites/"
+        self.enemy_projectiles = []
         
         # Tower info
         self.tower_types = {
@@ -83,9 +87,9 @@ class MazeTowerDefenseGame:
         
         try:
             # Load projectile sprites
-            sprite_path = "./sprites/"
-            shoot_right = Image.open(f"{sprite_path}shoot_right.png")
-            shoot_left = Image.open(f"{sprite_path}shoot_left.png")
+            shoot_right = Image.open(f"{self.sprite_path}shoot_right.png")
+            shoot_left = Image.open(f"{self.sprite_path}shoot_left.png")
+            projectile_sprite = Image.open(f"{self.sprite_path}grass3.png")
             
             # Resize projectile sprites
             shoot_right = shoot_right.resize((16, 16), Image.Resampling.LANCZOS) 
@@ -95,8 +99,11 @@ class MazeTowerDefenseGame:
                 'shoot_right': ImageTk.PhotoImage(shoot_right),
                 'shoot_left': ImageTk.PhotoImage(shoot_left)
             }
-            print(f"Loaded projectile sprites from {sprite_path}")
-            
+            print(f"Loaded projectile sprites from {self.sprite_path}")
+            self.enemy_projectile_frames = []
+            for i in range(4):
+                rotated = projectile_sprite.rotate(90 * i)
+                self.enemy_projectile_frames.append(ImageTk.PhotoImage(rotated))
         except Exception as e:
             print(f"Error loading projectile sprites: {e}")
             placeholder = Image.new('RGBA', (16, 16), 'yellow')
@@ -104,6 +111,7 @@ class MazeTowerDefenseGame:
                 'shoot_right': ImageTk.PhotoImage(placeholder),
                 'shoot_left': ImageTk.PhotoImage(placeholder)
             }
+        
         
         # Initialize UI (needs to be imported here to avoid circular imports)
         from ui import GameUI
@@ -118,28 +126,32 @@ class MazeTowerDefenseGame:
         self.ui.canvas.bind("<Motion>", self.on_canvas_hover)
         self.root.after(50, self.game_loop)
     
-    def toggle_game_speed(self):
-        speeds = [1.0, 1.5, 2.0, 0.5]
-        current_index = speeds.index(self.game_speed)
-        self.game_speed = speeds[(current_index + 1) % len(speeds)]
-        self.ui.speed_btn.config(text=f"{self.game_speed}x")
-    
     def generate_maze(self):
+        """Generate a new random maze."""
         self.maze = generate_maze(self.grid_size)
+        
+        # Add start point (top-left)
+        self.maze[0][0] = 0
+        # Add end point (bottom-right) 
+        self.maze[self.grid_size-1][self.grid_size-1] = 0
+        
+        # Reset game state
         self.towers = []
         self.enemies = []
         self.projectiles = []
-        self.current_wave = 0
-        self.lives = 20
-        self.money = 100
+        self.money = self.initial_money
+        self.lives = self.initial_lives
         self.score = 0
+        self.current_wave = 0
         self.wave_in_progress = False
+        self.build_mode = None
+        
+        # Reset UI
+        self.ui.status_label.configure(text="Hãy xây tháp và bắt đầu!")
+        self.ui.start_button.configure(text="Bắt Đầu Làn Sóng", state="normal")
+        
+        # Find paths for all algorithms
         self.find_paths()
-        if hasattr(self, 'ui'):
-            self.ui.draw_maze()
-            self.ui.update_info_labels()
-            self.ui.canvas.delete("all")
-            self.ui.start_button.config(text="Bắt Đầu Làn Sóng", state=tk.NORMAL)
   
         
     
@@ -167,7 +179,7 @@ class MazeTowerDefenseGame:
             self.last_update = time.time()
         
         current_time = time.time()
-        dt = (current_time - self.last_update) * self.game_speed
+        dt = current_time - self.last_update
         self.last_update = current_time
         
         # Update game logic
@@ -175,6 +187,7 @@ class MazeTowerDefenseGame:
         self.update_towers(dt)
         self.update_projectiles(dt)
         self.check_wave_end()
+        self.update_enemy_projectiles(dt)
         
         # Update UI
         self.ui.draw_maze()
@@ -204,20 +217,88 @@ class MazeTowerDefenseGame:
     def update_projectiles(self, dt):
         for projectile in self.projectiles[:]:
             if not Projectile.update(projectile, dt):
-                self.projectiles.remove(projectile)
+                # Check if projectile hit any enemy
+                hit_enemy = False
                 for enemy in self.enemies[:]:
-                    if (abs(enemy['x'] - projectile['target_x']) < self.cell_size/2 and
-                        abs(enemy['y'] - projectile['target_y']) < self.cell_size/2):
+                    if (abs(enemy['x'] - projectile['target_x']) < self.cell_size / 2 and
+                        abs(enemy['y'] - projectile['target_y']) < self.cell_size / 2):
+                        hit_enemy = True
                         enemy['health'] -= projectile['damage']
+
                         if projectile['tower_type'] == 'freezer':
                             enemy['frozen'] = True
                             enemy['freeze_timer'] = 100
+
                         if enemy['health'] <= 0:
                             self.money += enemy['reward']
                             self.score += enemy['reward']
+                            
+                            # Xóa sprite của enemy
+                            sprite_ids = self.ui.canvas.find_closest(enemy['x'], enemy['y'])
+                            for sprite_id in sprite_ids:
+                                self.ui.canvas.delete(sprite_id)
+                            
                             self.enemies.remove(enemy)
                             self.ui.update_info_labels()
                         break
+
+                # Remove projectile whether it hit or missed
+                if projectile in self.projectiles:
+                    self.projectiles.remove(projectile)
+    
+    def update_enemy_projectiles(self, dt):
+        for projectile in self.enemy_projectiles[:]:
+            # Add movement calculation
+            dx = projectile['target_x'] - projectile['x']
+            dy = projectile['target_y'] - projectile['y']
+            length = (dx**2 + dy**2)**0.5
+            
+            if length > 0:
+                # Move projectile
+                speed = 200
+                projectile['x'] += (dx/length) * speed * dt
+                projectile['y'] += (dy/length) * speed * dt
+                
+                # Update sprite position
+                self.ui.canvas.coords(projectile['sprite'], 
+                                    projectile['x'],
+                                    projectile['y'])
+
+            # Animation update
+            projectile['animation_timer'] = projectile.get('animation_timer', 0) + dt
+            if projectile['animation_timer'] >= 0.1:
+                projectile['animation_timer'] = 0
+                current_frame = projectile.get('current_frame', 0)
+                next_frame = (current_frame + 1) % len(self.enemy_projectile_frames)
+                projectile['current_frame'] = next_frame
+                
+                # Update sprite image
+                self.ui.canvas.itemconfig(
+                    projectile['sprite'],
+                    image=self.enemy_projectile_frames[next_frame]
+                )
+                
+            # Check if projectile has reached target
+            if length < 5:
+                self.ui.canvas.delete(projectile['sprite'])
+                self.enemy_projectiles.remove(projectile)
+            for tower in self.towers[:]:
+                tower_x = tower['x'] * self.cell_size + self.cell_size/2
+                tower_y = tower['y'] * self.cell_size + self.cell_size/2
+                
+                if (abs(projectile['x'] - tower_x) < self.cell_size/2 and
+                    abs(projectile['y'] - tower_y) < self.cell_size/2):
+                    # Hit tower
+                    if 'health' in tower:
+                        tower['health'] -= projectile['damage']
+                        if tower['health'] <= 0:
+                            self.towers.remove(tower)
+                            self.maze[tower['y']][tower['x']] = 0
+                    
+                    # Remove projectile
+                    self.ui.canvas.delete(projectile['sprite'])
+                    self.enemy_projectiles.remove(projectile)
+                    break
     
     def check_wave_end(self):
         if self.wave_in_progress and not self.enemies:
@@ -225,30 +306,36 @@ class MazeTowerDefenseGame:
             self.current_wave += 1
             self.money += 20 + self.current_wave * 5
             self.ui.update_info_labels()
-            self.ui.start_button.config(text="Bắt Đầu Làn Sóng")
+            self.ui.start_button.configure(text="Bắt Đầu Làn Sóng")
     
     def start_wave(self):
         if not self.wave_in_progress:
             self.wave_in_progress = True
             self.spawn_enemies()
-            self.ui.start_button.config(text="Làn Sóng Đang Diễn Ra...")
+            self.ui.start_button.configure(text="Làn Sóng Đang Diễn Ra...")
     
     def spawn_enemies(self):
         """Spawn enemies with sprite animations."""
         try:
             if not hasattr(self, 'enemy_sprites'):
-                sprite_path = "./sprites/"
                 
                 # Load sprites
-                walk_right = self.ui.load_sprites(f"{sprite_path}walkright.png", 4)
-                walk_left = self.ui.load_sprites(f"{sprite_path}walkleft.png", 4) 
-                walk_updown = self.ui.load_sprites(f"{sprite_path}walkup.png", 4)
+                walk_right = self.ui.load_sprites(f"{self.sprite_path}walkright.png", 4)
+                walk_left = self.ui.load_sprites(f"{self.sprite_path}walkleft.png", 4) 
+                walk_updown = self.ui.load_sprites(f"{self.sprite_path}walkup.png", 4)
+                shoot_right = self.ui.load_sprites(f"{self.sprite_path}shoot_right.png", 4)
+                shoot_left = self.ui.load_sprites(f"{self.sprite_path}shoot_left.png", 4)
                 
                 self.enemy_sprites = {
                     'walk_right': walk_right,
                     'walk_left': walk_left,
-                    'walk_updown': walk_updown  # Make sure this matches the direction name used in Enemy.update
+                    'walk_updown': walk_updown,  # Make sure this matches the direction name used in Enemy.update
+                    'shoot_right': shoot_right,
+                    'shoot_left': shoot_left
                 }
+            # projectile_sprite = Image.open(f"{self.sprite_path}grass3.png")
+            # projectile_sprite = projectile_sprite.resize((16, 16))
+            # self.enemy_projectile_sprite = ImageTk.PhotoImage(projectile_sprite)
         except Exception as e:
             print(f"Error loading sprites: {e}")
             # Create placeholder sprites if loading fails
@@ -257,8 +344,10 @@ class MazeTowerDefenseGame:
             self.enemy_sprites = {
                 'walk_right': [placeholder_image],
                 'walk_left': [placeholder_image], 
-                'walk_updown': [placeholder_image]
-            }
+                'walk_updown': [placeholder_image],
+                'shoot_right': [placeholder_image],
+                'shoot_left': [placeholder_image]
+            } 
         
         num_enemies = 10 + self.current_wave * 5  # Tăng từ 3 lên 10 quân ban đầu
         base_health = 50 + self.current_wave * 8 
@@ -314,7 +403,7 @@ class MazeTowerDefenseGame:
                 
                 # Can only build towers before wave starts
                 if self.wave_in_progress and self.build_mode in self.tower_types:
-                    self.ui.status_label.config(text="Không thể xây tháp khi làn sóng đang diễn ra!")
+                    self.ui.status_label.configure(text="Không thể xây tháp khi làn sóng đang diễn ra!")
                     return
                 
                 # Build/delete tower based on build_mode
@@ -324,7 +413,7 @@ class MazeTowerDefenseGame:
                         test_maze = [row[:] for row in self.maze]
                         test_maze[grid_y][grid_x] = 2
                         if not find_path(test_maze, self.grid_size, self.selected_algo.get()):
-                            self.ui.status_label.config(text="Không thể xây tháp ở đây vì sẽ chặn hết đường đi!")
+                            self.ui.status_label.configure(text="Không thể xây tháp ở đây vì sẽ chặn hết đường đi!")
                             return
                         self.add_tower(grid_x, grid_y, self.build_mode)
                         self.money -= self.tower_types[self.build_mode]["cost"]
@@ -368,11 +457,11 @@ class MazeTowerDefenseGame:
         # Update the status label with hover information
         if 0 <= grid_x < self.grid_size and 0 <= grid_y < self.grid_size:
             if (grid_x, grid_y) == (0, 0):
-                self.ui.status_label.config(text="Điểm Xuất Phát (Kẻ địch)")
+                self.ui.status_label.configure(text="Điểm Xuất Phát (Kẻ địch)")
             elif (grid_x, grid_y) == (self.grid_size-1, self.grid_size-1):
-                self.ui.status_label.config(text="Điểm Đích (Bảo vệ đây!)")
+                self.ui.status_label.configure(text="Điểm Đích (Bảo vệ đây!)")
             elif self.maze[grid_y][grid_x] == 1:
-                self.ui.status_label.config(text="Tường (Không thể xây tháp)")
+                self.ui.status_label.configure(text="Tường (Không thể xây tháp)")
             elif self.maze[grid_y][grid_x] == 2:
                 # Find the tower at this position
                 for tower in self.towers:
@@ -380,7 +469,7 @@ class MazeTowerDefenseGame:
                         tower_type = tower['type']
                         tower_info = self.tower_types[tower_type]
                         status = f"{tower_info['name']} | DMG: {tower['damage']} | RNG: {tower['range']}"
-                        self.ui.status_label.config(text=status)
+                        self.ui.status_label.configure(text=status)
                         tower['show_range'] = True
                         # Redraw to show range
                         self.ui.draw_maze()
@@ -392,10 +481,12 @@ class MazeTowerDefenseGame:
                 
                 if hasattr(self, 'build_mode') and self.build_mode in self.tower_types:
                     tower = self.tower_types[self.build_mode]
-                    self.ui.status_label.config(text=f"Xây {tower['name']} tại ({grid_x}, {grid_y})")
+                    self.ui.status_label.configure(text=f"Xây {tower['name']} tại ({grid_x}, {grid_y})")
                 else:
-                    self.ui.status_label.config(text=f"Ô trống tại ({grid_x}, {grid_y})")
+                    self.ui.status_label.configure(text=f"Ô trống tại ({grid_x}, {grid_y})")
 
+
+    
     def show_help(self):
         help_text = """
         Hướng Dẫn Chơi:
@@ -414,31 +505,89 @@ class MazeTowerDefenseGame:
         - Tháp Bắn Tỉa rất mạnh nhưng đắt, sử dụng hợp lý
         """
         
-        help_window = tk.Toplevel(self.root)
+        help_window = ctk.CTkToplevel(self.root)
         help_window.title("Hướng Dẫn")
-        help_window.geometry("400x350")
+        help_window.geometry("400x500")
         
-        text_widget = tk.Text(help_window, wrap=tk.WORD, padx=10, pady=10)
-        text_widget.pack(fill=tk.BOTH, expand=True)
-        text_widget.insert(tk.END, help_text)
-        text_widget.config(state=tk.DISABLED)
+        # Tạo frame chứa nội dung với màu nền sáng
+        content_frame = ctk.CTkFrame(help_window, fg_color=("#F5F5F5", "#F5F5F5"))
+        content_frame.pack(fill="both", expand=True, padx=10, pady=10)
         
-        ttk.Button(help_window, text="Đóng", command=help_window.destroy).pack(pady=10)
+        # Tiêu đề với màu xanh lá
+        ctk.CTkLabel(content_frame, 
+                    text="HƯỚNG DẪN GAME", 
+                    font=ctk.CTkFont(size=24, weight="bold"),
+                    text_color="#2E7D32").pack(pady=10)
+        
+        # Nội dung hướng dẫn với màu nền trắng
+        text_box = ctk.CTkTextbox(content_frame, 
+                                 wrap="word",
+                                 fg_color=("#FFFFFF", "#FFFFFF"),
+                                 text_color="#1B5E20",
+                                 font=ctk.CTkFont(size=14))
+        text_box.pack(fill="both", expand=True, padx=10, pady=10)
+        text_box.insert("1.0", help_text)
+        text_box.configure(state="disabled")
+        
+        # Nút đóng với màu xanh dương
+        ctk.CTkButton(content_frame, 
+                     text="Đóng",
+                     font=ctk.CTkFont(size=14, weight="bold"),
+                     fg_color="#2196F3",
+                     hover_color="#1976D2",
+                     command=help_window.destroy).pack(pady=10)
 
     def set_build_mode(self, mode):
         self.build_mode = mode
         
-        # Update the tower info display
-        if mode in self.tower_types:
-            tower = self.tower_types[mode]
-            info_text = f"{tower['name']}\n\n"
-            info_text += f"Sát thương: {tower['damage']}\n"
-            info_text += f"Tầm bắn: {tower['range']} ô\n"
-            info_text += f"Tốc độ bắn: {100/tower['fire_rate']:.1f}/s\n\n"
-            info_text += f"{tower['description']}"
+        try:
+            # Update the tower info display
+            if mode in self.tower_types:
+                tower = self.tower_types[mode]
+                info_text = f"{tower['name']}\n\n"
+                info_text += f"Sát thương: {tower['damage']}\n"
+                info_text += f"Tầm bắn: {tower['range']} ô\n"
+                info_text += f"Tốc độ bắn: {100/tower['fire_rate']:.1f}/s\n\n"
+                info_text += f"{tower['description']}"
+                
+                if hasattr(self.ui, 'tower_info_label'):
+                    self.ui.tower_info_label.configure(text=info_text)
+            elif mode == "delete":
+                if hasattr(self.ui, 'tower_info_label'):
+                    self.ui.tower_info_label.configure(text="Chọn tháp để xóa và nhận lại 5$")
+            else:
+                if hasattr(self.ui, 'tower_info_label'):
+                    self.ui.tower_info_label.configure(text="Chọn tháp để xem thông tin chi tiết")
+        except Exception as e:
+            print(f"Error updating tower info: {e}")
+
+    def build_tower(self, x, y, tower_type):
+        if self.can_build(x, y, tower_type):
+            # Create tower with sprite instead of oval
+            tower = {
+                'x': x,
+                'y': y,
+                'type': tower_type,
+                'damage': self.tower_types[tower_type]['damage'],
+                'range': self.tower_types[tower_type]['range'],
+                'fire_rate': self.tower_types[tower_type]['fire_rate'],
+                'attack_cooldown': 0
+            }
             
-            self.ui.tower_info_label.config(text=info_text)
-        elif mode == "delete":
-            self.ui.tower_info_label.config(text="Chọn tháp để xóa và nhận lại 5$")
-        else:
-            self.ui.tower_info_label.config(text="Chọn tháp để xem thông tin chi tiết")
+            # Create image instead of oval
+            sprite = self.ui.canvas.create_image(
+                x * self.cell_size + self.cell_size/2,
+                y * self.cell_size + self.cell_size/2,
+                image=self.ui.tower_sprites[tower_type],
+                anchor='center',
+                tags='tower'
+            )
+            
+            tower['sprite'] = sprite
+            self.towers.append(tower)
+            
+            # Update resources
+            self.money -= self.tower_types[tower_type]['cost']
+            self.ui.update_info_labels()
+            return True
+        return False
