@@ -145,6 +145,8 @@ class MazeTowerDefenseGame:
         self.current_wave = 0
         self.wave_in_progress = False
         self.build_mode = None
+        self.ui.canvas.delete("all")
+
         
         # Reset UI
         self.ui.status_label.configure(text="Hãy xây tháp và bắt đầu!")
