@@ -31,7 +31,6 @@ class Tower:
             dx = enemy['x'] - tower_center_x
             dy = enemy['y'] - tower_center_y
             distance = math.sqrt(dx*dx + dy*dy)
-            
             if distance <= tower_range and distance < min_distance:
                 closest_enemy = enemy
                 min_distance = distance
@@ -39,24 +38,36 @@ class Tower:
         return closest_enemy
 
     @staticmethod
-    def attack(tower, target, dt, projectiles, cell_size, sprite=None):
-        tower['attack_cooldown'] -= dt
+    def attack(tower, target, dt, projectiles, cell_size, sprite):
         if tower['attack_cooldown'] <= 0:
-            # Reset cooldown
-            tower['attack_cooldown'] = tower['fire_rate']
-            
-            # Create projectile with proper velocity
-            start_x = tower['x'] * cell_size + cell_size/2
-            start_y = tower['y'] * cell_size + cell_size/2
-            
-            projectile = Projectile.create(
-                start_x, start_y,
-                target['x'], target['y'],
-                tower['damage'],
-                tower['type'],
-                target  # Pass target enemy reference
-            )
+            # Calculate position and direction
+            tower_x = tower['x'] * cell_size + cell_size/2
+            tower_y = tower['y'] * cell_size + cell_size/2
+            dx = target['x'] - tower_x
+            dy = target['y'] - tower_y
+            dist = math.sqrt(dx*dx + dy*dy)
+            if dist > 0:
+                dx = dx / dist * 200  # Speed of 200 pixels per second
+                dy = dy / dist * 200
+
+            # Create projectile directly
+            projectile = {
+                'x': tower_x,
+                'y': tower_y,
+                'dx': dx,
+                'dy': dy,
+                'tower_type': tower['type'],
+                'damage': tower['damage'],
+                'target_x': target['x'],
+                'target_y': target['y'],
+                'sprite': sprite,
+                'animation_timer': 0,
+                'current_frame': 0
+            }
             projectiles.append(projectile)
+            tower['attack_cooldown'] = 1.0 / tower['fire_rate']  # Reset cooldown based on fire rate
+        else:
+            tower['attack_cooldown'] -= dt
 
 class Enemy:
     @staticmethod

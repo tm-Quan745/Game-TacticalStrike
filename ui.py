@@ -1,6 +1,7 @@
 import tkinter as tk
 import customtkinter as ctk
 from PIL import Image, ImageTk
+import math
 
 class GameUI:
     def __init__(self, root, game):
@@ -16,9 +17,9 @@ class GameUI:
             freezer_tower = Image.open("./sprites/grass5.jpg")  # Tháp đóng băng
             sniper_tower = Image.open("./sprites/grass6.jpg")   # Tháp bắn tỉa
             # Add projectile sprites loading
-            ice = Image.open("./sprites/grass2.png")
-            sniper = Image.open("./sprites/grass3.png")
-            bullet = Image.open("./sprites/land1.jpg")
+            ice = Image.open("./sprites/bulletice.png")
+            sniper = Image.open("./sprites/bulletsniper.png")
+            bullet = Image.open("./sprites/bulletfire.png")
             enemy_projectile = Image.open("./sprites/proj_enemy.png")
             
             
@@ -41,14 +42,25 @@ class GameUI:
                 'shooter': ImageTk.PhotoImage(shooter_tower),
                 'freezer': ImageTk.PhotoImage(freezer_tower),
                 'sniper': ImageTk.PhotoImage(sniper_tower)
-            }
-            
+            }            # Create projectile sprites with 8 directional rotations
             self.projectile_sprites = {
-                'shooter': ImageTk.PhotoImage(bullet),
-                'freezer': ImageTk.PhotoImage(ice),
-                'sniper': ImageTk.PhotoImage(sniper)
+                'shooter': [],
+                'freezer': [],
+                'sniper': []
             }
             
+            # Create 8 rotation frames (every 45 degrees) for each projectile type
+            angles = [0, 45, 90, 135, 180, 225, 270, 315]
+            projectiles = {'shooter': bullet, 'freezer': ice, 'sniper': sniper}
+            for tower_type, base_sprite in projectiles.items():
+                frames = []
+                for angle in angles:
+                    rotated = base_sprite.copy()
+                    rotated = rotated.rotate(angle)
+                    frames.append(ImageTk.PhotoImage(rotated))
+                self.projectile_sprites[tower_type] = frames
+
+            # Enemy projectile frames
             self.enemy_projectile_frames = []
             rotated_bullet = enemy_projectile
             for i in range(4):  # Create 4 rotation frames
@@ -546,24 +558,16 @@ class GameUI:
                         fill="red",
                         font=("Minecraft", 10, "bold"),
                         tags="damage_text"
-                    )
-          # Draw projectiles as simple dots with trails
+                    )        # Draw tower projectiles with rotation animation
         for proj in self.game.projectiles:
-            # Draw main projectile
-            self.canvas.create_oval(
-                proj['x'] - 4, proj['y'] - 4,
-                proj['x'] + 4, proj['y'] + 4,
-                fill="red", outline="darkred",
-                tags="projectile"
-            )
+            # Calculate rotation frame based on projectile direction
+            angle = math.atan2(proj['dy'], proj['dx'])
+            frame_index = int(((angle + math.pi) / (2 * math.pi) * 8) % 8)
             
-            # Simple trail effect
-            self.canvas.create_line(
+            # Create image with correct rotation frame
+            self.canvas.create_image(
                 proj['x'], proj['y'],
-                proj['x'] - proj['dx'] * 3,
-                proj['y'] - proj['dy'] * 3,
-                fill=self.game.tower_types[proj['tower_type']]['color'],
-                width=2,
+                image=self.projectile_sprites[proj['tower_type']][frame_index],
                 tags="projectile"
             )
 
