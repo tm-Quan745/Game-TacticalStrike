@@ -7,6 +7,9 @@ from pathfinding import find_path
 from entities import Tower, Enemy, Projectile,EnemyProjectile
 from PIL import Image, ImageTk
 import customtkinter as ctk
+from entities import channels, load_sound_effects 
+
+sound_effects = load_sound_effects()
 
 class MazeTowerDefenseGame:
     def __init__(self, root):
@@ -204,6 +207,7 @@ class MazeTowerDefenseGame:
                 self.lives -= 1
                 self.enemies.remove(enemy)
                 if self.lives <= 0:
+                    channels['gameover'].play(sound_effects['gameover'])
                     self.game_over()
                 else:
                     self.ui.update_info_labels()

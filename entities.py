@@ -1,5 +1,34 @@
 import math
 from PIL import Image, ImageTk
+import pygame
+pygame.mixer.init()
+
+channels = {
+    'enemy_walk': pygame.mixer.Channel(0),
+    'enemy_attack': pygame.mixer.Channel(1),
+    'tower_attack_fire': pygame.mixer.Channel(2),
+    'tower_attack_ice' : pygame.mixer.Channel(3),
+    'tower_attack_sniper' : pygame.mixer.Channel(4),
+    'tower_explosion': pygame.mixer.Channel(5),
+    'gameover' : pygame.mixer.Channel(6)
+}
+
+def load_sound_effects():
+    
+    sounds = {
+        'tower_attack_fire': pygame.mixer.Sound('sound_effect/fire_shot.mp3'),
+        'tower_attack_ice' : pygame.mixer.Sound('sound_effect/ice_shot.mp3'),
+        'tower_attack_sniper': pygame.mixer.Sound('sound_effect/sniper_shot.mp3'),
+        'tower_explosion' : pygame.mixer.Sound('sound_effect/tower_destroy.mp3'),
+        'enemy_walk': pygame.mixer.Sound('sound_effect/footsteps.mp3'),
+        'enemy_attack': pygame.mixer.Sound('sound_effect/AK-47.mp3'),
+        'gameover' : pygame.mixer.Sound('sound_effect/game_over.mp3')
+    }
+    return sounds
+sound_effects = load_sound_effects()
+
+for i in range(pygame.mixer.get_num_channels()):
+    pygame.mixer.Channel(i).stop()
 
 class Tower:
     @staticmethod
@@ -49,6 +78,13 @@ class Tower:
             start_x = tower['x'] * cell_size + cell_size/2
             start_y = tower['y'] * cell_size + cell_size/2
             
+            if tower['type'] == 'shooter':
+                channels['tower_attack_fire'].play(sound_effects['tower_attack_fire'])
+            elif tower['type'] == 'freezer':
+                channels['tower_attack_ice'].play(sound_effects['tower_attack_ice'])
+            elif tower['type'] == 'sniper':
+                channels['tower_attack_sniper'].play(sound_effects['tower_attack_sniper'])
+                
             projectile = Projectile.create(
                 start_x, start_y,
                 target['x'], target['y'],
@@ -130,6 +166,9 @@ class Enemy:
             dist = math.sqrt(dx*dx + dy*dy)
             
             if dist <= enemy['attack_range']:
+                channels['enemy_walk'].stop()
+                if not channels['enemy_attack'].get_busy():
+                    channels['enemy_attack'].play(sound_effects['enemy_attack'])
                 has_tower_in_range = True
                 if enemy['attack_cooldown'] <= 0:
                     tower['health'] -= enemy['attack_damage']
@@ -144,6 +183,9 @@ class Enemy:
                     )
                     
                     if tower['health'] <= 0:
+                        channels['enemy_walk'].stop()
+                        channels['enemy_attack'].stop()
+                        channels['tower_explosion'].play(sound_effects['tower_explosion'])
                         game.towers.remove(tower)
                         game.maze[tower['y']][tower['x']] = 0
                 break
@@ -162,6 +204,7 @@ class Enemy:
         
         # Di chuyển nếu không đang tấn công tower
         if not has_tower_in_range:
+
             # Lấy vị trí target từ path
             if paths and paths[0]:
                 current_path = paths[0]
@@ -185,6 +228,9 @@ class Enemy:
                         return False
                 else:
                     # Di chuyển theo hướng
+                    if not channels['enemy_walk'].get_busy():
+                        channels['enemy_walk'].play(sound_effects['enemy_walk'])
+
                     enemy['x'] += (dx / dist) * speed * dt
                     enemy['y'] += (dy / dist) * speed * dt
 
@@ -196,6 +242,9 @@ class Enemy:
                     enemy['direction'] = 'walk_right' if dx > 0 else 'walk_left'
                 else:
                     enemy['direction'] = 'walk_updown'
+
+
+
                     
          # Handle shooting
         enemy['shoot_cooldown'] = enemy.get('shoot_cooldown', 0) - dt
