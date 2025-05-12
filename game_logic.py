@@ -1,5 +1,6 @@
 import random
 import time
+import math
 from tkinter import messagebox, ttk
 import tkinter as tk
 from maze_generator import generate_maze
@@ -10,14 +11,18 @@ import customtkinter as ctk
 from entities import channels, load_sound_effects 
 
 sound_effects = load_sound_effects()
+import math
 
 class MazeTowerDefenseGame:
     def __init__(self, root):
+        self.enemy_counter = 0  # Counter for generating unique enemy IDs
         self.root = root
         
         # Game parameters
         self.grid_size = 13
         self.cell_size = 45
+        self.cols = self.grid_size
+        self.rows = self.grid_size  # Add this line to fix the error
         self.initial_money = 100  # Add initial money value
         self.initial_lives = 20   # Add initial lives value
         self.maze = []
@@ -95,8 +100,8 @@ class MazeTowerDefenseGame:
             projectile_sprite = Image.open(f"{self.sprite_path}grass3.png")
             
             # Resize projectile sprites
-            shoot_right = shoot_right.resize((16, 16), Image.Resampling.LANCZOS) 
-            shoot_left = shoot_left.resize((16, 16), Image.Resampling.LANCZOS)
+            shoot_right = shoot_right.resize((32, 32), Image.Resampling.LANCZOS) 
+            shoot_left = shoot_left.resize((32, 32), Image.Resampling.LANCZOS)
             
             self.projectile_sprites = {
                 'shoot_right': ImageTk.PhotoImage(shoot_right),
@@ -203,108 +208,155 @@ class MazeTowerDefenseGame:
     def update_enemies(self, dt):
         for enemy in self.enemies[:]:
             if not Enemy.update(enemy, dt, self.cell_size, self.paths, self.ui.canvas, self):  # Pass self (game instance)
-                # Enemy reached the end
-                self.lives -= 1
+                # Enemy reached the end                self.lives -= 1
                 self.enemies.remove(enemy)
                 if self.lives <= 0:
                     channels['gameover'].play(sound_effects['gameover'])
                     self.game_over()
                 else:
                     self.ui.update_info_labels()
-    
+
     def update_towers(self, dt):
         for tower in self.towers:
             target = Tower.find_target(tower, self.enemies, self.cell_size)
-            if target:
-                dx = target['x'] - (tower['x'] * self.cell_size + self.cell_size/2)
-                sprite = self.projectile_sprites['shoot_right' if dx > 0 else 'shoot_left']
-                Tower.attack(tower, target, dt, self.projectiles, self.cell_size, sprite)
-    
+            if target and tower['attack_cooldown'] <= 0:
+                projectile = self.create_projectile(tower, target)
+                self.projectiles.append(projectile)
+                tower['attack_cooldown'] = 1.0 / tower['fire_rate']  # Reset cooldown based on fire rate
+            elif tower['attack_cooldown'] > 0:                tower['attack_cooldown'] -= dt    
     def update_projectiles(self, dt):
+        to_remove = []
         for projectile in self.projectiles[:]:
-            if not Projectile.update(projectile, dt):
-                # Check if projectile hit any enemy
-                hit_enemy = False
-                for enemy in self.enemies[:]:
-                    if (abs(enemy['x'] - projectile['target_x']) < self.cell_size / 2 and
-                        abs(enemy['y'] - projectile['target_y']) < self.cell_size / 2):
-                        hit_enemy = True
-                        enemy['health'] -= projectile['damage']
-
-                        if projectile['tower_type'] == 'freezer':
-                            enemy['frozen'] = True
-                            enemy['freeze_timer'] = 100
-
-                        if enemy['health'] <= 0:
-                            self.money += enemy['reward']
-                            self.score += enemy['reward']
-                            
-                            # Xóa sprite của enemy
-                            sprite_ids = self.ui.canvas.find_closest(enemy['x'], enemy['y'])
-                            for sprite_id in sprite_ids:
-                                self.ui.canvas.delete(sprite_id)
-                            
-                            self.enemies.remove(enemy)
-                            self.ui.update_info_labels()
-                        break
-
-                # Remove projectile whether it hit or missed
-                if projectile in self.projectiles:
-                    self.projectiles.remove(projectile)
-    
-    def update_enemy_projectiles(self, dt):
-        for projectile in self.enemy_projectiles[:]:
-            # Add movement calculation
-            dx = projectile['target_x'] - projectile['x']
-            dy = projectile['target_y'] - projectile['y']
-            length = (dx**2 + dy**2)**0.5
+            # Find current target
+            current_target = None
+            min_dist = float('inf')
             
-            if length > 0:
-                # Move projectile
-                speed = 200
-                projectile['x'] += (dx/length) * speed * dt
-                projectile['y'] += (dy/length) * speed * dt
-                
-                # Update sprite position
-                self.ui.canvas.coords(projectile['sprite'], 
-                                    projectile['x'],
-                                    projectile['y'])
+            # Calculate distance from tower to projectile
+            tower_x = projectile['initial_x'] if 'initial_x' in projectile else projectile['x']
+            tower_y = projectile['initial_y'] if 'initial_y' in projectile else projectile['y'] 
+            tower_range = projectile['tower_range'] if 'tower_range' in projectile else 3 * self.cell_size
 
-            # Animation update
-            projectile['animation_timer'] = projectile.get('animation_timer', 0) + dt
+            dx_to_tower = projectile['x'] - tower_x
+            dy_to_tower = projectile['y'] - tower_y
+            dist_to_tower = math.sqrt(dx_to_tower*dx_to_tower + dy_to_tower*dy_to_tower)
+
+            # Remove projectile if it's outside tower range
+            if dist_to_tower > tower_range:
+                to_remove.append(projectile)
+                continue
+
+            # Regular target finding logic
+            for enemy in self.enemies:
+                dx = enemy['x'] - projectile['x']
+                dy = enemy['y'] - projectile['y']
+                dist = math.sqrt(dx * dx + dy * dy)
+                if dist < min_dist:
+                    min_dist = dist
+                    current_target = enemy
+            
+            if current_target:
+                # Update direction to follow target
+                dx = current_target['x'] - projectile['x']
+                dy = current_target['y'] - projectile['y']
+                dist = math.sqrt(dx * dx + dy * dy)
+                if dist > 0:
+                    speed = 300  # High speed for better tracking
+                    projectile['dx'] = (dx / dist) * speed
+                    projectile['dy'] = (dy / dist) * speed
+            
+            # Update position
+            projectile['x'] += projectile['dx'] * dt
+            projectile['y'] += projectile['dy'] * dt
+            
+            # Update sprite position
+            self.ui.canvas.coords(projectile['sprite'], projectile['x'], projectile['y'])
+            
+            # Update sprite rotation based on movement direction
+            angle = math.degrees(math.atan2(projectile['dy'], projectile['dx']))
+            if angle < 0:
+                angle += 360
+            frame_index = int(((angle + 22.5) % 360) // 45)
+            
+            # Only update sprite if direction changed
+            if frame_index != projectile.get('frame_index', -1):
+                projectile['frame_index'] = frame_index
+                if frame_index < len(self.ui.projectile_sprites[projectile['tower_type']]):
+                    self.ui.canvas.itemconfig(
+                        projectile['sprite'],
+                        image=self.ui.projectile_sprites[projectile['tower_type']][frame_index]
+                    )
+            
+            # Check for hits
+            hit = False
+            if current_target and min_dist < self.cell_size / 2:
+                hit = True
+                current_target['health'] -= projectile['damage']
+                
+                if projectile['tower_type'] == 'freezer':
+                    current_target['frozen'] = True
+                    current_target['freeze_timer'] = 100
+                    
+                if current_target['health'] <= 0:
+                    self.money += current_target['reward']
+                    self.score += current_target['reward']
+                    self.enemies.remove(current_target)
+                    self.ui.update_info_labels()
+                
+                to_remove.append(projectile)
+            
+            # Remove projectile if it's out of bounds
+            if not hit and not (0 <= projectile['x'] <= self.cols * self.cell_size and
+                              0 <= projectile['y'] <= self.rows * self.cell_size):
+                to_remove.append(projectile)
+        
+        # Clean up projectiles
+        for proj in to_remove:
+            if proj in self.projectiles:
+                self.ui.canvas.delete(proj['sprite'])
+                self.projectiles.remove(proj)
+
+    def update_enemy_projectiles(self, dt):
+        to_remove = []
+        for projectile in self.enemy_projectiles:
+            # Di chuyển
+            projectile['x'] += projectile['dx'] * dt
+            projectile['y'] += projectile['dy'] * dt
+
+            # Cập nhật vị trí sprite
+            self.ui.canvas.coords(projectile['sprite'], projectile['x'], projectile['y'])
+
+            # Animation xoay
+            projectile['animation_timer'] += dt
             if projectile['animation_timer'] >= 0.1:
                 projectile['animation_timer'] = 0
-                current_frame = projectile.get('current_frame', 0)
-                next_frame = (current_frame + 1) % len(self.enemy_projectile_frames)
-                projectile['current_frame'] = next_frame
-                
-                # Update sprite image
-                self.ui.canvas.itemconfig(
-                    projectile['sprite'],
-                    image=self.enemy_projectile_frames[next_frame]
-                )
-                
-            # Check if projectile has reached target
-            if length < 5:
-                self.ui.canvas.delete(projectile['sprite'])
-                self.enemy_projectiles.remove(projectile)
-            for tower in self.towers[:]:
-                tower_x = tower['x'] * self.cell_size + self.cell_size/2
-                tower_y = tower['y'] * self.cell_size + self.cell_size/2
-                
-                if (abs(projectile['x'] - tower_x) < self.cell_size/2 and
-                    abs(projectile['y'] - tower_y) < self.cell_size/2):
-                    # Hit tower
-                    if 'health' in tower:
-                        tower['health'] -= projectile['damage']
-                        if tower['health'] <= 0:
-                            self.towers.remove(tower)
-                            self.maze[tower['y']][tower['x']] = 0
-                    
-                    # Remove projectile
+                projectile['current_frame'] = (projectile['current_frame'] + 1) % len(self.ui.enemy_projectile_frames)
+                self.ui.canvas.itemconfig(projectile['sprite'],
+                                        image=self.ui.enemy_projectile_frames[projectile['current_frame']])
+
+            # Kiểm tra va chạm với tower
+            for tower in self.towers:
+                tower_x = tower['x'] * self.cell_size + self.cell_size / 2
+                tower_y = tower['y'] * self.cell_size + self.cell_size / 2
+                if abs(projectile['x'] - tower_x) < 15 and abs(projectile['y'] - tower_y) < 15:
+                    tower['health'] -= projectile['damage']
+                    if tower['health'] <= 0:
+                        self.towers.remove(tower)
+                        self.maze[tower['y']][tower['x']] = 0
+                    to_remove.append(projectile)
                     self.ui.canvas.delete(projectile['sprite'])
-                    self.enemy_projectiles.remove(projectile)
                     break
+
+            # Loại bỏ nếu vượt ra ngoài
+            if not (0 <= projectile['x'] <= self.cols * self.cell_size and
+                    0 <= projectile['y'] <= self.rows * self.cell_size):
+                to_remove.append(projectile)
+                self.ui.canvas.delete(projectile['sprite'])
+
+        for proj in to_remove:
+            if proj in self.enemy_projectiles:
+                self.enemy_projectiles.remove(proj)
+
+
     
     def check_wave_end(self):
         if self.wave_in_progress and not self.enemies:
@@ -335,13 +387,10 @@ class MazeTowerDefenseGame:
                 self.enemy_sprites = {
                     'walk_right': walk_right,
                     'walk_left': walk_left,
-                    'walk_updown': walk_updown,  # Make sure this matches the direction name used in Enemy.update
+                    'walk_updown': walk_updown,
                     'shoot_right': shoot_right,
                     'shoot_left': shoot_left
                 }
-            # projectile_sprite = Image.open(f"{self.sprite_path}grass3.png")
-            # projectile_sprite = projectile_sprite.resize((16, 16))
-            # self.enemy_projectile_sprite = ImageTk.PhotoImage(projectile_sprite)
         except Exception as e:
             print(f"Error loading sprites: {e}")
             # Create placeholder sprites if loading fails
@@ -355,29 +404,30 @@ class MazeTowerDefenseGame:
                 'shoot_left': [placeholder_image]
             } 
         
-        num_enemies = 10 + self.current_wave * 5  # Tăng từ 3 lên 10 quân ban đầu
+        num_enemies = 10 + self.current_wave * 5
         base_health = 50 + self.current_wave * 8 
         base_speed = 50 + min(80, self.current_wave * 8)
-        
-        spawn_delay_base = 5  # Giảm từ 15 xuống 5
+        spawn_delay_base = 5
         
         for i in range(num_enemies):
             enemy_type = "normal"
             if self.current_wave >= 2:
                 r = random.random()
-                if r < 0.2:  # Tăng tỉ lệ tank từ 15% lên 20%
+                if r < 0.2:
                     enemy_type = "tank"
-                elif r < 0.5:  # Tăng tỉ lệ fast từ 20% lên 30% 
+                elif r < 0.5:
                     enemy_type = "fast"
             
+            self.enemy_counter += 1
             enemy = Enemy.create(
                 enemy_type,
                 self.enemy_types[enemy_type],
                 base_health,
                 base_speed,
-                i * spawn_delay_base,  # Spawn quân nhanh hơn
+                i * spawn_delay_base,
                 self.cell_size,
-                self.enemy_sprites
+                self.enemy_sprites,
+                self.enemy_counter  # Pass the unique ID
             )
             self.enemies.append(enemy)
     
@@ -597,3 +647,47 @@ class MazeTowerDefenseGame:
             self.ui.update_info_labels()
             return True
         return False
+    
+    def create_projectile(self, tower, target):
+        # Calculate position and direction
+        tower_x = tower['x'] * self.cell_size + self.cell_size/2
+        tower_y = tower['y'] * self.cell_size + self.cell_size/2
+        dx = target['x'] - tower_x
+        dy = target['y'] - tower_y
+        dist = (dx * dx + dy * dy) ** 0.5
+        speed = 300  # Fast speed for tracking
+        if dist > 0:
+            dx = dx / dist * speed
+            dy = dy / dist * speed
+        
+        # Calculate angle for sprite rotation (in degrees)
+        angle = math.degrees(math.atan2(dy, dx))
+        if angle < 0:
+            angle += 360
+        
+        # Find the closest angle from our 8 directions (every 45 degrees)
+        frame_index = int(((angle + 22.5) % 360) // 45)
+        
+        # Create sprite with the appropriate rotation
+        sprite = self.ui.canvas.create_image(
+            tower_x, tower_y,
+            image=self.ui.projectile_sprites[tower['type']][frame_index if frame_index < len(self.ui.projectile_sprites[tower['type']]) else 0],
+            tags="projectile"
+        )        
+        return {
+            'x': tower_x,
+            'y': tower_y,
+            'dx': dx,
+            'dy': dy,
+            'tower_type': tower['type'],
+            'damage': tower['damage'],
+            'initial_target': target,  # Store initial target for tracking
+            'target_x': target['x'],
+            'target_y': target['y'],
+            'sprite': sprite,
+            'frame_index': frame_index,
+            'speed': speed,  # Store speed for consistent movement
+            'initial_x': tower_x,  # Store initial tower position
+            'initial_y': tower_y,
+            'tower_range': tower['range'] * self.cell_size  # Store tower's range
+        }
