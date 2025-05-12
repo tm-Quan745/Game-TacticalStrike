@@ -121,19 +121,58 @@ class GameUI:
         game_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         
         # Game title
-        title_label = ctk.CTkLabel(game_frame, text="MÊ CUNG TOWER DEFENSE",
-                                font=ctk.CTkFont(family="Minecraft", size=24, weight="bold"),
-                                text_color="#2E7D32")
-        title_label.pack(pady=(0, 10))
+        # title_label = ctk.CTkLabel(game_frame, text="MÊ CUNG TOWER DEFENSE",
+        #                         font=ctk.CTkFont(family="Minecraft", size=24, weight="bold"),
+        #                         text_color="#2E7D32")
+        # title_label.pack(pady=(0, 10))
         
-        # Maze canvas
-        self.canvas = tk.Canvas(game_frame,
-                            width=self.game.grid_size * self.game.cell_size,
-                            height=self.game.grid_size * self.game.cell_size,
+        # Canvas container frame for centering
+        canvas_container = ctk.CTkFrame(game_frame, fg_color=("#F0F8FF", "#F0F8FF"))
+        canvas_container.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        # Maze canvas with initial size
+        initial_size = 600  # Default size
+        self.canvas = tk.Canvas(canvas_container,
+                            width=initial_size,
+                            height=initial_size,
                             bg="#E8F5E9",
                             highlightthickness=1,
                             highlightbackground="#81C784")
-        self.canvas.pack(padx=10, pady=10)
+
+        def on_resize(event=None):
+            if not hasattr(self.game, 'maze') or not self.game.maze:
+                return
+                
+            # Lấy kích thước mới của container
+            width = canvas_container.winfo_width() - 20
+            height = canvas_container.winfo_height() - 20
+            
+            # Lấy kích thước nhỏ nhất để giữ tỷ lệ vuông
+            size = min(width, height)
+            
+            # Cập nhật cell_size dựa trên không gian có sẵn
+            self.game.cell_size = max(30, size // self.game.grid_size)  # Minimum cell size of 30px
+            
+            # Tính kích thước canvas
+            canvas_size = self.game.cell_size * self.game.grid_size
+            
+            # Update canvas size
+            self.canvas.config(width=canvas_size, height=canvas_size)
+            
+            # Đặt canvas vào giữa container
+            self.canvas.place(relx=0.5, rely=0.5, anchor="center")
+            
+            # Vẽ lại mê cung với kích thước mới
+            try:
+                self.draw_maze()
+            except Exception as e:
+                print(f"Error drawing maze: {e}")
+
+        # Bind sự kiện resize và đặt canvas vào vị trí ban đầu
+        canvas_container.bind('<Configure>', on_resize)
+        self.root.update_idletasks()  # Ensure container has been drawn
+        self.canvas.place(relx=0.5, rely=0.5, anchor="center")
+        self.root.after(100, on_resize)  # Schedule initial resize after UI is fully loaded
         
         # Game status bar
         status_frame = ctk.CTkFrame(game_frame)

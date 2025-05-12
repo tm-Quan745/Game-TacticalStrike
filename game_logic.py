@@ -13,8 +13,8 @@ class MazeTowerDefenseGame:
         self.root = root
         
         # Game parameters
-        self.grid_size = 13
-        self.cell_size = 45
+        self.grid_size = 10
+        self.cell_size = 65
         self.initial_money = 100  # Add initial money value
         self.initial_lives = 20   # Add initial lives value
         self.maze = []
