@@ -4,6 +4,7 @@ from PIL import Image, ImageTk
 
 class GameUI:
     def __init__(self, root, game):
+        self.enemy_id_counter = 0  # Counter for generating unique enemy IDs
         self.root = root
         self.game = game
         # Load tile sprites
@@ -18,7 +19,7 @@ class GameUI:
             ice = Image.open("./sprites/grass2.png")
             sniper = Image.open("./sprites/grass3.png")
             bullet = Image.open("./sprites/land1.jpg")
-            enemy_projectile = Image.open("./sprites/grass4.jpg")
+            enemy_projectile = Image.open("./sprites/proj_enemy.png")
             
             
             # Resize sprites
@@ -382,10 +383,10 @@ class GameUI:
         self.lives_label.configure(text=f"Mạng: {self.game.lives}")
         self.wave_label.configure(text=f"Làn sóng: {self.game.current_wave}")
         self.score_label.configure(text=f"Điểm: {self.game.score}")
-    
     def draw_maze(self):
         """Draw the current state of the maze."""
-        self.canvas.delete("terrain", "health_bar", "projectile", "tower")
+        # Delete all existing elements except enemies
+        self.canvas.delete("terrain", "health_bar", "projectile", "tower", "damage_text")
 
         # Draw grid cells using sprites
         for y in range(self.game.grid_size):
@@ -486,48 +487,67 @@ class GameUI:
                 y * self.game.cell_size - 2,
                 fill="green",
                 tags="tower"
-            )
-        
-        # Vẽ thanh máu phía trên sprites
+            )          # Draw enemies with their sprites and health bars
         for enemy in self.game.enemies:
             if enemy['spawn_delay'] <= 0:
-                # Vẽ thanh máu với tag health_bar
+                enemy_id = enemy.get('id', id(enemy))  # Gán ID duy nhất nếu chưa có 
+                tag = f"enemy_{enemy_id}"
+
+                # Xoá sprite cũ
+                self.canvas.delete(tag)
+                
+                # Get current animation based on direction
+                current_anim = enemy.get('animation_frames', {}).get(enemy['direction'], [])
+                if current_anim and len(current_anim) > 0:
+                    # Use current frame from animation
+                    frame_index = enemy['current_frame'] % len(current_anim)
+                    frame = current_anim[frame_index]
+                    
+                    # Vẽ frame mới, gán tag riêng
+                    self.canvas.create_image(
+                        enemy['x'],
+                        enemy['y'],
+                        image=frame,
+                        anchor='center',
+                        tags=(tag, 'enemy')
+                    )
+                
+                # Draw enemy health bar
                 health_ratio = enemy['health'] / enemy['max_health']
                 bar_width = 20
                 bar_height = 4
                 
-                # Background của thanh máu
+                # Health bar background
                 self.canvas.create_rectangle(
                     enemy['x'] - bar_width/2,
-                    enemy['y'] - 20,  # Đẩy thanh máu lên cao hơn
+                    enemy['y'] - 20,
                     enemy['x'] + bar_width/2,
                     enemy['y'] - 20 + bar_height,
                     fill="red",
                     tags="health_bar"
                 )
                 
-                # Thanh máu hiện tại
+                # Current health bar
                 self.canvas.create_rectangle(
                     enemy['x'] - bar_width/2,
-                    enemy['y'] - 20,  # Đẩy máu lên cao hơn
+                    enemy['y'] - 20,
                     enemy['x'] - bar_width/2 + bar_width * health_ratio,
                     enemy['y'] - 20 + bar_height,
                     fill="green",
                     tags="health_bar"
                 )
                 
-                # Hiển thị damage text cao hơn thanh máu
+                # Show damage text above health bar
                 if enemy['damage_text_timer'] > 0:
                     self.canvas.create_text(
                         enemy['x'],
-                        enemy['y'] - 25,  # Đẩy text damage lên cao hơn
+                        enemy['y'] - 25,
                         text=str(enemy['damage_text']),
                         fill="red",
                         font=("Minecraft", 10, "bold"),
                         tags="damage_text"
                     )
-        
-        # Draw projectiles as simple dots with trails
+          # Draw projectiles as simple dots with trails
         for proj in self.game.projectiles:
             # Draw main projectile
             self.canvas.create_oval(
@@ -547,10 +567,21 @@ class GameUI:
                 tags="projectile"
             )
 
-        # Sắp xếp các layer theo thứ tự
-        self.canvas.tag_raise("enemy")      # Sprite enemy ở giữa
-        self.canvas.tag_raise("health_bar") # Thanh máu phía trên sprite
-        self.canvas.tag_raise("damage_text") # Text damage cao nhất
+        # Draw enemy projectiles
+        for projectile in self.game.enemy_projectiles:
+            self.canvas.create_image(
+                projectile['x'],
+                projectile['y'],
+                image=self.enemy_projectile_frames[projectile['current_frame']],
+                anchor='center',
+                tags="projectile"
+            )
+
+        # Layer ordering
+        self.canvas.tag_raise("enemy")        # Enemy sprites in middle
+        self.canvas.tag_raise("health_bar")   # Health bars above enemies
+        self.canvas.tag_raise("projectile")   # Projectiles on top
+        self.canvas.tag_raise("damage_text")  # Damage text highest
     
     def load_sprites(self, sheet_path, num_frames):
         """Load sprite sheet and split into frames."""        
