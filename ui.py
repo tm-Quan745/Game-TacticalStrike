@@ -650,6 +650,11 @@ class GameUI:
                 "name": "Beam Search",
                 "desc": "Tìm đường theo chiều rộng nhưng chỉ giữ số lượng giới hạn các lựa chọn tốt nhất ở mỗi bước",
                 "color": "#705446"
+            },
+            "And-Or":{
+                "name": "And-Or Search",
+                "desc": "Thuật toán kết hợp tìm kiếm tại các nút OR (chỉ cần một đường đi hợp lệ) và nút AND (cần kiểm tra tất cả các đường đi hợp lệ)",
+                "color": "#e1c391"
             }
         }
         
@@ -696,17 +701,18 @@ class GameUI:
         algo_color = {
             "BFS": "#4CAF50",
             "A*": "#FF9800",
-            "Beam": "#705446"
+            "Beam": "#705446",
+            "And-Or": "#e1c391"
         }.get(algorithm, "#FFFFFF")
         self.update_algorithm_button(algo_name, algo_color)
+        print(algo_name)
         window.destroy()
         
     def update_algorithm_button(self, algo_name, algo_color):
         """Update the algorithm button's text and color based on the selected algorithm"""
-        # Cập nhật lại tên và màu sắc của nút thuật toán
-        self.algorithm_button.configure(  # Thay `config` thành `configure`
+        self.algorithm_button.configure(  
             text=f"Thuật Toán: {algo_name}",
-            fg_color=algo_color  # Cập nhật màu sắc theo thuật toán đã chọn
+            fg_color=algo_color  
         )
 
 
