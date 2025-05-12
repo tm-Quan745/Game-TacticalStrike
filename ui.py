@@ -8,48 +8,73 @@ class GameUI:
         self.enemy_id_counter = 0  # Counter for generating unique enemy IDs
         self.root = root
         self.game = game
-        # Load tile sprites
+          # Create default sprites for error cases
+        default_proj = Image.new('RGBA', (16, 16), '#FF0000')
+        self.default_frame = ImageTk.PhotoImage(default_proj)
+        
+        # Theme tracking
+        self.current_theme = 0
+        self.themes = [
+            {
+                'wall': "./sprites/wall.png",
+                'floor': "./sprites/floor.png",
+                'name': "Default"
+            },
+            {
+                'wall': "./sprites/brownwall.png",
+                'floor': "./sprites/floorgrass.png",
+                'name': "Nature"
+            },
+            {
+                'wall': "./sprites/ForestTree.png",
+                'floor': "./sprites/ForestLand.png",
+                'name': "Forest"
+            },
+            {
+                'wall': "./sprites/water.png",
+                'floor': "./sprites/sand.png",
+                'name': "Beach"
+            }
+        ]
+        
+        # Create default sprites for error cases
+        default_proj = Image.new('RGBA', (16, 16), '#FF0000')
+        self.default_frame = ImageTk.PhotoImage(default_proj)
+        
+        # Load initial sprites
         try:
-            grass = Image.open("./sprites/wall.png")
-            land = Image.open("./sprites/floor.png")
-            # Add tower sprites loading
-            shooter_tower = Image.open("./sprites/grass4.jpg")  # Tháp bắn
-            freezer_tower = Image.open("./sprites/grass5.jpg")  # Tháp đóng băng
-            sniper_tower = Image.open("./sprites/grass6.jpg")   # Tháp bắn tỉa
+            # Load initial theme sprites
+            self.load_theme_sprites(self.current_theme)
+              # Add tower sprites loading
+            shooter_tower = Image.open("./sprites/shooter_tower.png")  # Tháp bắn
+            freezer_tower = Image.open("./sprites/freezer_tower.png")  # Tháp đóng băng
+            sniper_tower = Image.open("./sprites/sniper_tower.png")   # Tháp bắn tỉa
             # Add projectile sprites loading
             ice = Image.open("./sprites/bulletice.png")
             sniper = Image.open("./sprites/bulletsniper.png")
             bullet = Image.open("./sprites/bulletfire.png")
             enemy_projectile = Image.open("./sprites/proj_enemy.png")
-            
-            
+        
             # Resize sprites
-            grass = grass.resize((game.cell_size, game.cell_size), Image.Resampling.LANCZOS)
-            land = land.resize((game.cell_size, game.cell_size), Image.Resampling.LANCZOS)
             shooter_tower = shooter_tower.resize((48, 48), Image.Resampling.LANCZOS)
             freezer_tower = freezer_tower.resize((48, 48), Image.Resampling.LANCZOS)
             sniper_tower = sniper_tower.resize((48, 48), Image.Resampling.LANCZOS)
             bullet = bullet.resize((16, 16), Image.Resampling.LANCZOS)
             ice = ice.resize((16, 16), Image.Resampling.LANCZOS)
             sniper = sniper.resize((16, 16), Image.Resampling.LANCZOS)
-            enemy_projectile = enemy_projectile.resize((16, 16), Image.Resampling.LANCZOS)
-            self.tile_sprites = {
-                'grass': ImageTk.PhotoImage(grass),
-                'land': ImageTk.PhotoImage(land),
-            }
-            
+            enemy_projectile = enemy_projectile.resize((16, 16), Image.Resampling.LANCZOS)            
             self.tower_sprites = {
                 'shooter': ImageTk.PhotoImage(shooter_tower),
                 'freezer': ImageTk.PhotoImage(freezer_tower),
                 'sniper': ImageTk.PhotoImage(sniper_tower)
-            }            # Create projectile sprites with 8 directional rotations
+            }# Create projectile sprites with 8 directional rotations
             self.projectile_sprites = {
                 'shooter': [],
                 'freezer': [],
                 'sniper': []
             }
             
-            # Create 8 rotation frames (every 45 degrees) for each projectile type
+                # Create 8 rotation frames (every 45 degrees) for each projectile type
             angles = [0, 45, 90, 135, 180, 225, 270, 315]
             projectiles = {'shooter': bullet, 'freezer': ice, 'sniper': sniper}
             for tower_type, base_sprite in projectiles.items():
@@ -58,14 +83,16 @@ class GameUI:
                     rotated = base_sprite.copy()
                     rotated = rotated.rotate(angle)
                     frames.append(ImageTk.PhotoImage(rotated))
-                self.projectile_sprites[tower_type] = frames
-
-            # Enemy projectile frames
+                self.projectile_sprites[tower_type] = frames            # Enemy projectile frames
             self.enemy_projectile_frames = []
-            rotated_bullet = enemy_projectile
-            for i in range(4):  # Create 4 rotation frames
-                self.enemy_projectile_frames.append(ImageTk.PhotoImage(rotated_bullet))
-                rotated_bullet = rotated_bullet.rotate(90)
+            try:
+                rotated = enemy_projectile
+                for i in range(4):  # Create 4 rotation frames
+                    self.enemy_projectile_frames.append(ImageTk.PhotoImage(rotated))
+                    rotated = rotated.rotate(90)
+            except Exception as e:
+                print(f"Warning: Error creating enemy projectile frames: {e}")
+                self.enemy_projectile_frames = [self.default_frame] * 4
             
             # Load tower sprites
             tower_size = (32, 32)  # Kích thước tower
@@ -92,11 +119,11 @@ class GameUI:
             # Create tower animation frames (optional)
             self.tower_animation_frames = {
                 "shooter": [ImageTk.PhotoImage(shooter_tower.resize(tower_size).rotate(angle)) 
-                           for angle in range(0, 360, 45)],
+                            for angle in range(0, 360, 45)],
                 "freezer": [ImageTk.PhotoImage(freezer_tower.resize(tower_size).rotate(angle)) 
-                           for angle in range(0, 360, 45)],
+                            for angle in range(0, 360, 45)],
                 "sniper": [ImageTk.PhotoImage(sniper_tower.resize(tower_size).rotate(angle)) 
-                          for angle in range(0, 360, 45)]
+                            for angle in range(0, 360, 45)]
             }
             
             # Load start and end point sprites
@@ -107,7 +134,7 @@ class GameUI:
             point_size = (self.game.cell_size, self.game.cell_size)
             self.start_sprite = ImageTk.PhotoImage(camp.resize(point_size, Image.Resampling.LANCZOS))
             self.end_sprite = ImageTk.PhotoImage(castle.resize(point_size, Image.Resampling.LANCZOS))
-            
+                
         except Exception as e:
             print(f"Error loading sprites: {e}")
             self.tile_sprites = {
@@ -174,6 +201,17 @@ class GameUI:
         # Game buttons frame
         buttons_frame = ctk.CTkFrame(control_scroll, fg_color=("#E8F5E9", "#E8F5E9"))
         buttons_frame.pack(fill=tk.X, pady=5, padx=5)
+        
+        # Theme selection button
+        self.theme_button = ctk.CTkButton(
+            buttons_frame,
+            text=f"Theme: {self.themes[self.current_theme]['name']}",
+            font=ctk.CTkFont(family="Minecraft", size=14, weight="bold"),
+            fg_color="#9C27B0",
+            hover_color="#7B1FA2",
+            command=self.change_theme
+        )
+        self.theme_button.pack(fill=tk.X, padx=5, pady=5)
         
         # Algorithm selection button
         self.algorithm_button = ctk.CTkButton(
@@ -720,7 +758,43 @@ class GameUI:
             fg_color=algo_color  
         )
 
-
-        
-        
+    def load_theme_sprites(self, theme_index):
+        """Load sprites for the current theme"""
+        theme = self.themes[theme_index]
+        try:
+            # Load wall sprite
+            wall = Image.open(theme['wall'])
+            wall = wall.resize((self.game.cell_size, self.game.cell_size), Image.Resampling.LANCZOS)
+            
+            # Load floor sprite  
+            floor = Image.open(theme['floor'])
+            floor = floor.resize((self.game.cell_size, self.game.cell_size), Image.Resampling.LANCZOS)
+            
+            # Update tile sprites
+            self.tile_sprites = {
+                'grass': ImageTk.PhotoImage(wall),
+                'land': ImageTk.PhotoImage(floor)
+            }
+            
+            # Redraw maze with new sprites
+            self.draw_maze()
+            
+        except Exception as e:
+            print(f"Error loading theme sprites: {e}")
+            # Create default colored sprites if loading fails
+            placeholder = Image.new('RGBA', (self.game.cell_size, self.game.cell_size), '#8d6e63')
+            placeholder2 = Image.new('RGBA', (self.game.cell_size, self.game.cell_size), '#e8f5e9')
+            self.tile_sprites = {
+                'grass': ImageTk.PhotoImage(placeholder),
+                'land': ImageTk.PhotoImage(placeholder2)
+            }
     
+    def change_theme(self):
+        """Change to the next available theme"""
+        self.current_theme = (self.current_theme + 1) % len(self.themes)
+        self.load_theme_sprites(self.current_theme)
+        self.theme_button.configure(text=f"Theme: {self.themes[self.current_theme]['name']}")
+
+
+
+

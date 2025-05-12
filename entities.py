@@ -74,9 +74,7 @@ class Enemy:
     def create(enemy_type, type_data, base_health, base_speed, spawn_delay, cell_size, sprites, enemy_id=None):
         """Create a new enemy instance with animation support."""
         health = base_health * type_data['health_factor']
-        speed = base_speed * type_data['speed_factor']
-
-        # Initialize enemy with all required fields
+        speed = base_speed * type_data['speed_factor']        # Initialize enemy with all required fields
         enemy = {
             'id': enemy_id,  # Unique ID for enemy
             'x': cell_size / 2,  # Starting position
@@ -96,6 +94,10 @@ class Enemy:
             'animation_frames': sprites,
             'current_frame': 0,
             'direction': "walk_right",
+            'can_shoot': True,  # Enemy có thể bắn
+            'shoot_cooldown': 0,  # Thời gian chờ giữa các lần bắn
+            'shoot_range': cell_size * 3,  # Tầm bắn của enemy
+            'shoot_damage': 5,  # Sát thương đạn của enemy
             'animation_speed': 100,
             'canvas_image': None,
             # Add missing fields
@@ -208,33 +210,44 @@ class Enemy:
                     enemy['direction'] = 'walk_updown'
                       # Handle shooting - chỉ bắn khi đang trong trạng thái shoot
         enemy['shoot_cooldown'] = enemy.get('shoot_cooldown', 0) - dt
-        if enemy['shoot_cooldown'] <= 0 and ('shoot_left' in enemy['direction'] or 'shoot_right' in enemy['direction']):
-            # Find nearest tower to shoot at
-            nearest_tower = None
-            min_dist = float('inf')
-            for tower in game.towers:
-                dx = tower['x'] * cell_size - enemy['x']
-                dy = tower['y'] * cell_size - enemy['y']
-                dist = (dx**2 + dy**2)**0.5
-                if dist < min_dist and dist <= enemy['attack_range']:  # Chỉ tìm tower trong tầm tấn công
-                    min_dist = dist
-                    nearest_tower = tower
-                    
-            if nearest_tower:  # Nếu có tower trong tầm
-                projectile = EnemyProjectile.create(
-                    enemy['x'], enemy['y'],
-                    nearest_tower['x'] * cell_size + cell_size/2,
-                    nearest_tower['y'] * cell_size + cell_size/2,
-                    1  # Damage value
-                )
-                projectile['sprite'] = canvas.create_image(
-                    enemy['x'], enemy['y'],
-                    image=game.ui.enemy_projectile_frames[0],
-                    anchor='center'
-                )
-                game.enemy_projectiles.append(projectile)
-                enemy['shoot_cooldown'] = 2  # Reset cooldown
         
+        # Kiểm tra tower trong tầm đánh và xác định hướng bắn
+        nearest_tower = None
+        min_dist = float('inf')
+        for tower in game.towers:
+            tower_x = tower['x'] * cell_size + cell_size/2
+            tower_y = tower['y'] * cell_size + cell_size/2
+            dx = tower_x - enemy['x']
+            dy = tower_y - enemy['y']
+            dist = math.sqrt(dx*dx + dy*dy)
+            
+            if dist <= enemy.get('attack_range', cell_size * 3) and dist < min_dist:
+                min_dist = dist
+                nearest_tower = tower
+                # Cập nhật hướng bắn dựa trên vị trí tower
+                enemy['direction'] = 'shoot_right' if dx >= 0 else 'shoot_left'
+        
+        # Bắn khi có tower trong tầm và hết cooldown
+        if nearest_tower and enemy['shoot_cooldown'] <= 0:
+            tower_x = nearest_tower['x'] * cell_size + cell_size/2
+            tower_y = nearest_tower['y'] * cell_size + cell_size/2
+            
+            projectile = EnemyProjectile.create(
+                enemy['x'], enemy['y'],
+                tower_x, tower_y,
+                enemy.get('attack_damage', 5)  # Default damage
+            )
+            
+            projectile['sprite'] = canvas.create_image(
+                enemy['x'], enemy['y'],
+                image=game.ui.enemy_projectile_frames[0],
+                anchor='center',
+                tags='enemy_projectile'
+            )
+            
+            game.enemy_projectiles.append(projectile)
+            enemy['shoot_cooldown'] = enemy.get('shoot_rate', 2.0)  # Reset cooldown
+
         # Create or update enemy sprite with unique tag
         enemy_tag = f"enemy_{enemy['id']}"
         current_anim = enemy['animation_frames'].get(enemy['direction'])

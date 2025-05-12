@@ -97,8 +97,8 @@ class MazeTowerDefenseGame:
             projectile_sprite = Image.open(f"{self.sprite_path}grass3.png")
             
             # Resize projectile sprites
-            shoot_right = shoot_right.resize((16, 16), Image.Resampling.LANCZOS) 
-            shoot_left = shoot_left.resize((16, 16), Image.Resampling.LANCZOS)
+            shoot_right = shoot_right.resize((32, 32), Image.Resampling.LANCZOS) 
+            shoot_left = shoot_left.resize((32, 32), Image.Resampling.LANCZOS)
             
             self.projectile_sprites = {
                 'shoot_right': ImageTk.PhotoImage(shoot_right),
@@ -219,14 +219,29 @@ class MazeTowerDefenseGame:
                 projectile = self.create_projectile(tower, target)
                 self.projectiles.append(projectile)
                 tower['attack_cooldown'] = 1.0 / tower['fire_rate']  # Reset cooldown based on fire rate
-            elif tower['attack_cooldown'] > 0:                tower['attack_cooldown'] -= dt
-
+            elif tower['attack_cooldown'] > 0:                tower['attack_cooldown'] -= dt    
     def update_projectiles(self, dt):
         to_remove = []
         for projectile in self.projectiles[:]:
             # Find current target
             current_target = None
             min_dist = float('inf')
+            
+            # Calculate distance from tower to projectile
+            tower_x = projectile['initial_x'] if 'initial_x' in projectile else projectile['x']
+            tower_y = projectile['initial_y'] if 'initial_y' in projectile else projectile['y'] 
+            tower_range = projectile['tower_range'] if 'tower_range' in projectile else 3 * self.cell_size
+
+            dx_to_tower = projectile['x'] - tower_x
+            dy_to_tower = projectile['y'] - tower_y
+            dist_to_tower = math.sqrt(dx_to_tower*dx_to_tower + dy_to_tower*dy_to_tower)
+
+            # Remove projectile if it's outside tower range
+            if dist_to_tower > tower_range:
+                to_remove.append(projectile)
+                continue
+
+            # Regular target finding logic
             for enemy in self.enemies:
                 dx = enemy['x'] - projectile['x']
                 dy = enemy['y'] - projectile['y']
@@ -654,8 +669,7 @@ class MazeTowerDefenseGame:
             tower_x, tower_y,
             image=self.ui.projectile_sprites[tower['type']][frame_index if frame_index < len(self.ui.projectile_sprites[tower['type']]) else 0],
             tags="projectile"
-        )
-
+        )        
         return {
             'x': tower_x,
             'y': tower_y,
@@ -668,5 +682,8 @@ class MazeTowerDefenseGame:
             'target_y': target['y'],
             'sprite': sprite,
             'frame_index': frame_index,
-            'speed': speed  # Store speed for consistent movement
+            'speed': speed,  # Store speed for consistent movement
+            'initial_x': tower_x,  # Store initial tower position
+            'initial_y': tower_y,
+            'tower_range': tower['range'] * self.cell_size  # Store tower's range
         }
