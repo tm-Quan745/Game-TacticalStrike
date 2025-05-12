@@ -651,6 +651,11 @@ class GameUI:
                 "desc": "Tìm đường theo chiều rộng nhưng chỉ giữ số lượng giới hạn các lựa chọn tốt nhất ở mỗi bước",
                 "color": "#705446"
             },
+            "Q-Learning": {
+                "name": "Q-Learning",
+                "desc": "Học tăng cường để tìm đường tối ưu trực tiếp trên map hiện tại",
+                "color": "#2196F3"
+            },
             "And-Or":{
                 "name": "And-Or Search",
                 "desc": "Thuật toán kết hợp tìm kiếm tại các nút OR (chỉ cần một đường đi hợp lệ) và nút AND (cần kiểm tra tất cả các đường đi hợp lệ)",

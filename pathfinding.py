@@ -19,6 +19,7 @@ from algorithms.bfs import bfs_find_path
 from algorithms.astar import astar_find_path
 from algorithms.beam import beam_search_find_path
 from algorithms.and_or import and_or_search_find_path
+from algorithms.qlearning import qlearning_find_path
 
 def find_path(maze, grid_size, algorithm="BFS"):
     """Find path using the specified algorithm."""
@@ -30,6 +31,9 @@ def find_path(maze, grid_size, algorithm="BFS"):
         path = beam_search_find_path(maze, grid_size)
     elif algorithm == "And-Or":
         path = and_or_search_find_path(maze, grid_size)
+    elif algorithm == "Q-Learning":
+        print("Đang áp dụng Q-learning cho map hiện tại...")
+        path = qlearning_find_path(maze, grid_size)
     else:
         path = None
     
