@@ -623,6 +623,7 @@ class GameUI:
         algo_window = ctk.CTkToplevel(self.root)
         algo_window.title("Chọn Thuật Toán Tìm Đường")
         algo_window.geometry("400x500")
+        algo_window.grab_set()
         
         # Content frame
         content_frame = ctk.CTkFrame(algo_window, fg_color=("#F5F5F5", "#F5F5F5"))
@@ -640,20 +641,15 @@ class GameUI:
                 "desc": "Tìm đường ngắn nhất bằng cách duyệt theo chiều rộng",
                 "color": "#4CAF50"
             },
-            "DFS": {
-                "name": "Depth-First Search",
-                "desc": "Tìm đường bằng cách duyệt theo chiều sâu",
-                "color": "#2196F3"
-            },
-            "Dijkstra": {
-                "name": "Dijkstra",
-                "desc": "Tìm đường ngắn nhất dựa trên chi phí di chuyển",
-                "color": "#9C27B0"
-            },
             "A*": {
                 "name": "A* (A-Star)",
                 "desc": "Tìm đường thông minh kết hợp chi phí và heuristic",
                 "color": "#FF9800"
+            },
+            "Beam":{
+                "name": "Beam Search",
+                "desc": "Tìm đường theo chiều rộng nhưng chỉ giữ số lượng giới hạn các lựa chọn tốt nhất ở mỗi bước",
+                "color": "#705446"
             }
         }
         
@@ -674,7 +670,11 @@ class GameUI:
             ctk.CTkLabel(info_frame,
                         text=algo_info["desc"],
                         font=ctk.CTkFont(size=12),
-                        text_color="#666666").pack(anchor="w")
+                        text_color="#666666",
+                        anchor="w",
+                        justify="left",
+                        wraplength=280).pack(anchor="w", fill="x")
+
             
             # Select button
             def make_select_command(algo):
@@ -692,4 +692,24 @@ class GameUI:
         """Select an algorithm and update the UI"""
         self.game.selected_algo.set(algorithm)
         self.game.find_paths()
+        algo_name = self.game.selected_algo.get()
+        algo_color = {
+            "BFS": "#4CAF50",
+            "A*": "#FF9800",
+            "Beam": "#705446"
+        }.get(algorithm, "#FFFFFF")
+        self.update_algorithm_button(algo_name, algo_color)
         window.destroy()
+        
+    def update_algorithm_button(self, algo_name, algo_color):
+        """Update the algorithm button's text and color based on the selected algorithm"""
+        # Cập nhật lại tên và màu sắc của nút thuật toán
+        self.algorithm_button.configure(  # Thay `config` thành `configure`
+            text=f"Thuật Toán: {algo_name}",
+            fg_color=algo_color  # Cập nhật màu sắc theo thuật toán đã chọn
+        )
+
+
+        
+        
+    
