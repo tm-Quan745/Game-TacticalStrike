@@ -615,6 +615,11 @@ class GameUI:
                 "name": "Beam Search",
                 "desc": "Tìm đường theo chiều rộng nhưng chỉ giữ số lượng giới hạn các lựa chọn tốt nhất ở mỗi bước",
                 "color": "#705446"
+            },
+            "Q-Learning": {
+                "name": "Q-Learning",
+                "desc": "Học tăng cường để tìm đường tối ưu trực tiếp trên map hiện tại",
+                "color": "#2196F3"
             }
         }
         
