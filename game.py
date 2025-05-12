@@ -156,7 +156,7 @@ class MazeTowerDefenseGame:
         algo_frame = ttk.LabelFrame(control_frame, text="Thuật Toán Tìm Đường")
         algo_frame.pack(fill=tk.X, pady=5)
         
-        algorithms = ["BFS", "DFS", "Dijkstra", "A*"]
+        algorithms = ["BFS", "A*", "Beam"]
         for algo in algorithms:
             ttk.Radiobutton(algo_frame, text=algo, value=algo, 
                            variable=self.selected_algo, 
