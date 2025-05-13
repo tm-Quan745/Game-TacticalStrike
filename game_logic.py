@@ -12,6 +12,7 @@ from entities import channels, load_sound_effects
 
 sound_effects = load_sound_effects()
 import math
+from radar_view import RadarView
 
 class MazeTowerDefenseGame:
     def __init__(self, root):
@@ -36,6 +37,7 @@ class MazeTowerDefenseGame:
         self.wave_in_progress = False
         self.selected_algo = tk.StringVar(value="BFS")
         self.score = 0
+        self.radar_view = None
         self.build_mode = None
         self.sprite_path = "./sprites/"
         self.enemy_projectiles = []
@@ -138,6 +140,11 @@ class MazeTowerDefenseGame:
     
     def generate_maze(self):
         """Generate a new random maze."""
+        # Đóng radar view nếu đang mở
+        if self.radar_view:
+            self.radar_view.hide()
+            self.radar_view = None
+            
         self.maze = generate_maze(self.grid_size)
         
         # Add start point (top-left)
@@ -169,7 +176,20 @@ class MazeTowerDefenseGame:
     
     def find_paths(self):
         # Find a single path using the selected algorithm
-        path = find_path(self.maze, self.grid_size, self.selected_algo.get())
+        algo = self.selected_algo.get()
+        
+        # Nếu là Partial, tạo radar view
+        if algo == "Partial":
+            if not self.radar_view:
+                self.radar_view = RadarView(self.root, self.grid_size, 20)
+            self.radar_view.show()
+        else:
+            # Đóng radar view nếu đang mở và chuyển sang thuật toán khác
+            if self.radar_view:
+                self.radar_view.hide()
+                self.radar_view = None
+        
+        path = find_path(self.maze, self.grid_size, algo)
         if not path:
             return
             
@@ -200,6 +220,7 @@ class MazeTowerDefenseGame:
         self.update_projectiles(dt)
         self.check_wave_end()
         self.update_enemy_projectiles(dt)
+        self.update_belief_state()  # Cập nhật radar view
         
         # Update UI
         self.ui.draw_maze()
@@ -528,15 +549,46 @@ class MazeTowerDefenseGame:
             self.enemies.append(enemy)
     
     def game_over(self):
+        # Đóng radar view nếu đang mở
+        if self.radar_view:
+            self.radar_view.hide()
+            self.radar_view = None
+            
         self.wave_in_progress = False
         messagebox.showinfo("Game Over", f"Game Over! Final Score: {self.score}")
         self.generate_maze()
+
+    def update_belief_state(self):
+        """Cập nhật belief_state dựa trên vị trí quân địch và tháp"""
+        if not self.radar_view or self.selected_algo.get() != "Partial":
+            return
+            
+        belief_state = [[-1] * self.grid_size for _ in range(self.grid_size)]
+        
+        # Cập nhật từ vị trí quân địch
+        for enemy in self.enemies:
+            x, y = int(enemy['x'] / self.cell_size), int(enemy['y'] / self.cell_size)
+            for dy in range(-2, 3):
+                for dx in range(-2, 3):
+                    new_x, new_y = x + dx, y + dy
+                    if (0 <= new_x < self.grid_size and
+                        0 <= new_y < self.grid_size and
+                        abs(dx) + abs(dy) <= 2):
+                        belief_state[new_y][new_x] = self.maze[new_y][new_x]
+                        
+        # Cập nhật từ vị trí tháp
+        for tower in self.towers:
+            x, y = tower['x'], tower['y']
+            belief_state[y][x] = self.maze[y][x]  # Tháp luôn nhìn thấy vị trí của nó
+        
+        self.radar_view.update_view(self.maze, belief_state)
 
     def add_tower(self, x, y, tower_type):
         """Add a new tower at the specified position."""
         tower = Tower.create(x, y, tower_type, self.tower_types[tower_type])
         self.towers.append(tower)
         self.maze[y][x] = 2  # Mark cell as containing a tower
+        self.update_belief_state()  # Cập nhật radar view
     
     def play_sound(self, sound_name):
         # Placeholder for sound effects
@@ -577,6 +629,7 @@ class MazeTowerDefenseGame:
                                 self.towers.remove(tower)
                                 self.money += 5  # Refund some money
                                 self.maze[grid_y][grid_x] = 0  # Mark as empty
+                                self.update_belief_state()  # Cập nhật radar view
                                 self.play_sound("sell")
                 
                 # Redraw the maze
@@ -626,6 +679,30 @@ class MazeTowerDefenseGame:
                         # Redraw to show range
                         self.ui.draw_maze()
                         break
+            
+            # Preview tháp trên radar view khi đang trong build mode
+            if hasattr(self, 'build_mode') and self.build_mode in self.tower_types:
+                if self.maze[grid_y][grid_x] == 0:  # Chỉ preview trên ô trống
+                    test_maze = [row[:] for row in self.maze]
+                    test_maze[grid_y][grid_x] = 2
+                    
+                    if self.radar_view and self.selected_algo.get() == "Partial":
+                        preview_belief = [[-1] * self.grid_size for _ in range(self.grid_size)]
+                        
+                        # Copy current vision from enemies
+                        for enemy in self.enemies:
+                            x, y = int(enemy['x'] / self.cell_size), int(enemy['y'] / self.cell_size)
+                            for dy in range(-2, 3):
+                                for dx in range(-2, 3):
+                                    new_x, new_y = x + dx, y + dy
+                                    if (0 <= new_x < self.grid_size and
+                                        0 <= new_y < self.grid_size and
+                                        abs(dx) + abs(dy) <= 2):
+                                        preview_belief[new_y][new_x] = test_maze[new_y][new_x]
+                        
+                        # Add preview tower
+                        preview_belief[grid_y][grid_x] = 2
+                        self.radar_view.update_view(test_maze, preview_belief)
             else:
                 # Clear previous tower ranges
                 for tower in self.towers:
