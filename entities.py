@@ -64,8 +64,7 @@ class Tower:
                 closest_enemy = enemy
                 min_distance = distance
         
-        return closest_enemy
-
+        return closest_enemy    
     @staticmethod
     def attack(tower, target, dt, projectiles, cell_size, sprite):
         if tower['attack_cooldown'] <= 0:
@@ -76,12 +75,28 @@ class Tower:
             start_x = tower['x'] * cell_size + cell_size/2
             start_y = tower['y'] * cell_size + cell_size/2
             
-            if tower['type'] == 'shooter':
-                channels['tower_attack_fire'].play(sound_effects['tower_attack_fire'])
-            elif tower['type'] == 'freezer':
-                channels['tower_attack_ice'].play(sound_effects['tower_attack_ice'])
-            elif tower['type'] == 'sniper':
-                channels['tower_attack_sniper'].play(sound_effects['tower_attack_sniper'])
+            print(f"[SOUND] {tower['type']} tower attacking")
+            try:
+                if tower['type'] == 'shooter':
+                    sound = sound_effects['tower_attack_fire']
+                    channel = channels['tower_attack_fire']
+                elif tower['type'] == 'freezer':
+                    sound = sound_effects['tower_attack_ice']
+                    channel = channels['tower_attack_ice']
+                elif tower['type'] == 'sniper':
+                    sound = sound_effects['tower_attack_sniper']
+                    channel = channels['tower_attack_sniper']
+                else:
+                    print(f"[ERROR] Unknown tower type: {tower['type']}")
+                    return
+
+                print(f"[DEBUG] Sound exists: {sound is not None}, Channel busy: {channel.get_busy()}")
+                sound.set_volume(1.0)
+                if not channel.get_busy():
+                    channel.play(sound)
+                    print(f"[SUCCESS] Playing {tower['type']} attack sound")
+            except Exception as e:
+                print(f"[ERROR] Sound play failed: {e}")
                 
             projectile = Projectile.create(
                 start_x, start_y,

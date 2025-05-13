@@ -214,16 +214,19 @@ class MazeTowerDefenseGame:
                     channels['gameover'].play(sound_effects['gameover'])
                     self.game_over()
                 else:
-                    self.ui.update_info_labels()
-
+                    self.ui.update_info_labels()    
     def update_towers(self, dt):
         for tower in self.towers:
             target = Tower.find_target(tower, self.enemies, self.cell_size)
+            print(f"[DEBUG] {tower['type']} tower - target: {target is not None}, cooldown: {tower['attack_cooldown']}")
+            
             if target and tower['attack_cooldown'] <= 0:
-                projectile = self.create_projectile(tower, target)
-                self.projectiles.append(projectile)
-                tower['attack_cooldown'] = 1.0 / tower['fire_rate']  # Reset cooldown based on fire rate
-            elif tower['attack_cooldown'] > 0:                tower['attack_cooldown'] -= dt    
+                print(f"[DEBUG] {tower['type']} tower attacking target at position ({target['x']}, {target['y']})")
+                Tower.attack(tower, target, dt, self.projectiles, self.cell_size, sprite=None)
+            elif tower['attack_cooldown'] > 0:
+                tower['attack_cooldown'] -= dt
+                if tower['attack_cooldown'] < 0:
+                    tower['attack_cooldown'] = 0
     def update_projectiles(self, dt):
         to_remove = []
         for projectile in self.projectiles[:]:
