@@ -39,10 +39,10 @@ class Tower:
             'type': tower_type,
             'damage': tower_info['damage'],
             'range': tower_info['range'],
-            'fire_rate': tower_info['fire_rate'],
+            'fire_rate': tower_info['fire_rate'],            
             'attack_cooldown': 0,  # Initialize cooldown
-            'health': 100,         # Add base health
-            'max_health': 100,     # Add max health
+            'health': 200,         # Tăng máu cơ bản lên 200
+            'max_health': 200,     # Tăng max health lên 200
             'show_range': False,
             'active_projectiles': 0  # Track number of active projectiles
         }
@@ -165,17 +165,18 @@ class Enemy:
             'type': enemy_type,
             'animation_frames': sprites,
             'current_frame': 0,
-            'direction': "walk_right",
+            'direction': "walk_right",            
             'can_shoot': True,  # Enemy có thể bắn
-            'shoot_cooldown': 0,  # Thời gian chờ giữa các lần bắn
-            'shoot_range': cell_size * 3,  # Tầm bắn của enemy
-            'shoot_damage': 5,  # Sát thương đạn của enemy
+            'shoot_cooldown': 0,  # Thời gian chờ giữa các lần bắn            
+            'shoot_rate': 0.15,  # Thời gian giữa các lần bắn (0.15 giây)
+            'shoot_range': cell_size * 3,  # Tầm bắn của enemy            
+            'shoot_damage': 1,  # Tăng sát thương đạn lên 1
             'animation_speed': 100,
             'canvas_image': None,
-            # Add missing fields
+            # Add missing fields            
             'damage_text': 0,
             'damage_text_timer': 0,
-            'attack_damage': 5,  # Sát thương khi tấn công tháp
+            'attack_damage': 3,  # Tăng sát thương cận chiến lên 3
             'attack_range': cell_size * 1.5,  # Tầm đánh tháp
             'attack_cooldown': 0,  # Thời gian hồi đánh
             'attack_rate': 1.0,  # Tốc độ đánh (giây)
@@ -230,12 +231,14 @@ class Enemy:
                         fill="red", 
                         font=("Arial", 10, "bold"),
                         tags="damage_text"
-                    )
-                    
+                    )                    
                     if tower['health'] <= 0:
+                        # Phát âm thanh nổ trước khi dừng các âm thanh khác
+                        channels['tower_explosion'].play(sound_effects['tower_explosion'])
+                        # Sau đó mới dừng các âm thanh khác
                         channels['enemy_walk'].stop()
                         channels['enemy_attack'].stop()
-                        channels['tower_explosion'].play(sound_effects['tower_explosion'])
+                        # Xóa tower và cập nhật maze
                         game.towers.remove(tower)
                         game.maze[tower['y']][tower['x']] = 0
                 break
@@ -317,12 +320,15 @@ class Enemy:
         # Bắn khi có tower trong tầm và hết cooldown
         if nearest_tower and enemy['shoot_cooldown'] <= 0:
             tower_x = nearest_tower['x'] * cell_size + cell_size/2
-            tower_y = nearest_tower['y'] * cell_size + cell_size/2
+            tower_y = nearest_tower['y'] * cell_size + cell_size/2            # Tạo một đạn đi thẳng đến tower
+            base_damage = enemy.get('attack_damage', 5)
             
+            # Tạo đạn nhắm thẳng vào tower
             projectile = EnemyProjectile.create(
                 enemy['x'], enemy['y'],
-                tower_x, tower_y,
-                enemy.get('attack_damage', 5)  # Default damage
+                tower_x,  # Nhắm trực tiếp vào tower
+                tower_y,
+                base_damage
             )
             
             projectile['sprite'] = canvas.create_image(
@@ -333,7 +339,9 @@ class Enemy:
             )
             
             game.enemy_projectiles.append(projectile)
-            enemy['shoot_cooldown'] = enemy.get('shoot_rate', 2.0)  # Reset cooldown
+            
+            # Reset cooldown với tốc độ bắn nhanh hơn
+            enemy['shoot_cooldown'] = enemy.get('shoot_rate', 0.3)  # Giảm cooldown xuống 0.3s
 
         # Create or update enemy sprite with unique tag
         enemy_tag = f"enemy_{enemy['id']}"
@@ -401,7 +409,7 @@ class Projectile:
                 (projectile['target_y'] - projectile['y'])**2)**0.5
         return dist > 5
     
-class EnemyProjectile:
+class EnemyProjectile:    
     @staticmethod
     def create(x, y, target_x, target_y, damage):
         dx = target_x - x
@@ -416,7 +424,7 @@ class EnemyProjectile:
             'target_y': target_y,
             'dx': (dx / dist) * speed,
             'dy': (dy / dist) * speed,
-            'damage': damage,
+            'damage': min(1, damage),  # Đảm bảo damage không vượt quá 1
             'sprite': None,
             'animation_timer': 0,
             'current_frame': 0,

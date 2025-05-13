@@ -44,52 +44,54 @@ class MazeTowerDefenseGame:
         self.tower_types = {
             "shooter": {
                 "name": "Tháp Bắn",
-                "cost": 20,
-                "damage": 10,
+                "cost": 25,
+                "damage": 15,
                 "range": 3,
-                "fire_rate": 1.0,  # Shoot every second
+                "fire_rate": 0.8,  # Bắn nhanh hơn
                 "color": "#3498db",
                 "description": "Bắn kẻ địch từ xa với tốc độ cao"
             },
             "freezer": {
                 "name": "Tháp Đóng Băng",
-                "cost": 30,
-                "damage": 5,
+                "cost": 35,
+                "damage": 8,
                 "range": 2,
-                "fire_rate": 1.5,  # Slower than shooter tower
+                "fire_rate": 1.2,  # Chậm hơn shooter nhưng hiệu ứng đóng băng
                 "color": "#00bcd4",
                 "description": "Làm chậm và gây sát thương nhẹ"
             },
             "sniper": {
                 "name": "Tháp Bắn Tỉa",
-                "cost": 50,
-                "damage": 30,
-                "range": 5,
-                "fire_rate": 2.0,  # Slowest fire rate but highest damage
+                "cost": 60,
+                "damage": 45,
+                "range": 4,
+                "fire_rate": 2.5,  # Chậm nhất nhưng sát thương cao
                 "color": "#9b59b6",
                 "description": "Gây sát thương lớn với tầm xa"
             }
         }
         
         # Enemy types
-        self.enemy_types = {
-            "normal": {
+        self.enemy_types = {            "normal": {
                 "color": "#e67e22",
-                "speed_factor": 1.0,
-                "health_factor": 1.0,
-                "reward": 10
+                "speed_factor": 1.2,  # Tăng tốc độ cơ bản
+                "health_factor": 1.2,
+                "damage": 8,
+                "reward": 12
             },
             "fast": {
                 "color": "#e74c3c",
-                "speed_factor": 2.0,
-                "health_factor": 0.6,
-                "reward": 15
+                "speed_factor": 2.0,  # Tăng tốc độ của fast unit
+                "health_factor": 0.7,
+                "damage": 12,
+                "reward": 18
             },
             "tank": {
                 "color": "#7f8c8d",
-                "speed_factor": 0.6,
-                "health_factor": 2.5,
-                "reward": 20
+                "speed_factor": 0.8,  # Tăng tốc độ của tank unit
+                "health_factor": 3.0,
+                "damage": 15,
+                "reward": 25
             }
         }
         
@@ -350,12 +352,30 @@ class MazeTowerDefenseGame:
             # Kiểm tra va chạm với tower
             for tower in self.towers:
                 tower_x = tower['x'] * self.cell_size + self.cell_size / 2
-                tower_y = tower['y'] * self.cell_size + self.cell_size / 2
+                tower_y = tower['y'] * self.cell_size + self.cell_size / 2                
                 if abs(projectile['x'] - tower_x) < 15 and abs(projectile['y'] - tower_y) < 15:
-                    tower['health'] -= projectile['damage']
+                    # Sử dụng damage từ projectile, default là 1 nếu không có
+                    damage = projectile.get('damage', 1)  # Giảm default damage xuống 1
+                    tower['health'] -= damage
+                    
+                    # Hiển thị damage
+                    damage_text = self.ui.canvas.create_text(
+                        tower_x, tower_y - 20,
+                        text=str(damage),
+                        fill="red",
+                        font=("Arial", 12, "bold")
+                    )
+                    self.root.after(1000, lambda x=damage_text: self.ui.canvas.delete(x))
+                    
+                    print(f"Enemy deals {damage} damage to tower! Tower health: {tower['health']}")
+                    
                     if tower['health'] <= 0:
+                        print("Tower destroyed!")
                         self.towers.remove(tower)
                         self.maze[tower['y']][tower['x']] = 0
+                        if hasattr(tower, 'sprite'):
+                            self.ui.canvas.delete(tower['sprite'])
+                    
                     to_remove.append(projectile)
                     self.ui.canvas.delete(projectile['sprite'])
                     break
@@ -376,7 +396,21 @@ class MazeTowerDefenseGame:
         if self.wave_in_progress and not self.enemies:
             self.wave_in_progress = False
             self.current_wave += 1
-            self.money += 20 + self.current_wave * 5
+            
+            # Tăng phần thưởng theo wave
+            wave_bonus = 20 + self.current_wave * 10
+            self.money += wave_bonus
+            
+            # Thông báo hoàn thành wave và chỉ số mới            
+            completion_text = f"Hoàn thành làn sóng {self.current_wave-1}!\n"
+            completion_text += f"Nhận thưởng: {wave_bonus}$\n"
+            completion_text += f"\nLàn sóng tiếp theo:\n"
+            completion_text += f"- Số lượng địch: {8 + int(self.current_wave * 4)}\n"
+            completion_text += f"- Máu cơ bản: {int(50 * (1 + self.current_wave * 0.2))}\n"
+            completion_text += f"- Sát thương đạn: {max(1, int(1 + self.current_wave * 0.5))}\n"
+            
+            messagebox.showinfo("Hoàn thành làn sóng", completion_text)
+            
             self.ui.update_info_labels()
             self.ui.start_button.configure(text="Bắt Đầu Làn Sóng")
     
@@ -418,30 +452,78 @@ class MazeTowerDefenseGame:
                 'shoot_left': [placeholder_image]
             } 
         
-        num_enemies = 10 + self.current_wave * 5
-        base_health = 50 + self.current_wave * 8 
-        base_speed = 50 + min(80, self.current_wave * 8)
-        spawn_delay_base = 5
+        # Tính toán chỉ số tăng theo wave
+        wave_multiplier = 1 + (self.current_wave * 0.2)  # Tăng 20% mỗi wave
+        num_enemies = 8 + int(self.current_wave * 4)  # Tăng số lượng enemy
+        
+        # Tăng máu và damage theo cấp số nhân
+        base_health = int(50 * wave_multiplier)
+        base_damage = int(self.current_wave * 2)  # Damage bonus theo wave        
+        # Tăng tốc độ với giới hạn tối đa (về như cũ)
+        base_speed = 30 + min(75, self.current_wave * 6)
+          # Thêm hệ số tăng tốc ngẫu nhiên (1.0 - 1.3) - chỉ có thể nhanh hơn
+        speed_variation = 1.0 + random.random() * 0.3
+        base_speed *= speed_variation
+        
+        # Tính toán spawn delay dựa trên wave
+        # Wave đầu: 8s, giảm nhanh ở wave đầu và chậm dần ở các wave sau
+        initial_delay = 8.0
+        reduction_factor = 0.8 ** self.current_wave  # Giảm theo hàm mũ
+        min_delay = 0.5  # Giảm minimum delay xuống 0.5s
+        
+        spawn_delay_base = max(min_delay, initial_delay * reduction_factor)
+        
+        # Thêm biến động spawn delay để tạo đợt tấn công dày đặc
+        if self.current_wave > 5:  # Từ wave 6 trở đi
+            if random.random() < 0.3:  # 30% cơ hội tạo đợt tấn công dày đặc
+                spawn_delay_base *= 0.5  # Giảm một nửa thời gian chờ
+          # Tỉ lệ xuất hiện enemy đặc biệt tăng theo wave
+        tank_chance = min(0.35, 0.15 + self.current_wave * 0.03)
+        fast_chance = min(0.45, 0.25 + self.current_wave * 0.04)
+        
+        print(f"[Wave {self.current_wave}] Spawning {num_enemies} enemies:")
+        print(f"Base Health: {base_health}, Base Speed: {base_speed}, Base Damage: {base_damage}")
+        print(f"Tank chance: {tank_chance:.2%}, Fast chance: {fast_chance:.2%}")
+        print(f"Spawn Delay: {spawn_delay_base:.1f}s")  # Log spawn delay
+        
+        print(f"[Wave {self.current_wave}] Spawning {num_enemies} enemies:")
+        print(f"Base Health: {base_health}, Base Speed: {base_speed}, Base Damage: {base_damage}")
+        print(f"Tank chance: {tank_chance:.2%}, Fast chance: {fast_chance:.2%}")
         
         for i in range(num_enemies):
             enemy_type = "normal"
-            if self.current_wave >= 2:
+            if self.current_wave >= 1:  # Bắt đầu xuất hiện enemy đặc biệt từ wave 1
                 r = random.random()
-                if r < 0.2:
+                if r < tank_chance:
                     enemy_type = "tank"
-                elif r < 0.5:
+                elif r < (tank_chance + fast_chance):
                     enemy_type = "fast"
+              # Điều chỉnh chỉ số theo loại enemy
+            type_data = self.enemy_types[enemy_type]
+            enemy_health = int(base_health * type_data['health_factor'])
+            enemy_speed = base_speed * type_data['speed_factor']            # Tính toán damage dựa trên wave, bắt đầu từ mức rất thấp
+            base_shot_damage = max(1, int(0.5 + self.current_wave * 0.1))  # Bắt đầu từ 0.5, tăng 0.01 mỗi wave
+            enemy_damage = type_data['damage'] + base_damage  # Damage cận chiến
             
-            self.enemy_counter += 1
+            # Thêm bonus damage và health cho enemy đặc biệt theo wave
+            if enemy_type in ["tank", "fast"]:
+                enemy_health += int(self.current_wave * 10)
+                enemy_damage += int(self.current_wave * 1.5)  # Thêm damage bonus cho enemy mạnh
+                base_shot_damage = int(base_shot_damage * 1.1)  # Enemy đặc biệt gây thêm 10% sát thương đạn
+            self.enemy_counter += 1            # Add damage to type_data
+            type_data = dict(type_data)  # Create a copy to avoid modifying the original
+            type_data['damage'] = enemy_damage
+            type_data['shoot_damage'] = base_shot_damage  # Thêm sát thương đạn
+            
             enemy = Enemy.create(
                 enemy_type,
-                self.enemy_types[enemy_type],
-                base_health,
-                base_speed,
+                type_data,
+                enemy_health,
+                enemy_speed,
                 i * spawn_delay_base,
                 self.cell_size,
                 self.enemy_sprites,
-                self.enemy_counter  # Pass the unique ID
+                self.enemy_counter
             )
             self.enemies.append(enemy)
     
@@ -670,7 +752,14 @@ class MazeTowerDefenseGame:
         dx = target['x'] - tower_x
         dy = target['y'] - tower_y
         dist = (dx * dx + dy * dy) ** 0.5
-        speed = 300  # Fast speed for tracking
+        
+        # Điều chỉnh tốc độ đạn theo loại tháp
+        if tower['type'] == 'sniper':
+            speed = 500  # Đạn sniper rất nhanh
+        elif tower['type'] == 'freezer':
+            speed = 200  # Đạn đóng băng chậm nhất
+        else:
+            speed = 350  # Tốc độ đạn thường
         
         if dist > 0:
             dx = dx / dist * speed
@@ -702,10 +791,10 @@ class MazeTowerDefenseGame:
             'target_y': target['y'],
             'sprite': sprite,
             'frame_index': frame_index,
-            'initial_x': tower_x,  # Store starting position
-            'initial_y': tower_y,  # Store starting position
-            'tower_range': tower['range'] * self.cell_size,  # Store range in pixels
-            'speed': speed  # Store speed for movement calculations
+            'initial_x': tower_x,
+            'initial_y': tower_y,
+            'tower_range': tower['range'] * self.cell_size,
+            'speed': speed
         }
         
         return projectile
