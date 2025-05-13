@@ -66,7 +66,7 @@ class MazeTowerDefenseGame:
                 "name": "Tháp Bắn Tỉa",
                 "cost": 60,
                 "damage": 45,
-                "range": 4,
+                "range": 5,
                 "fire_rate": 2.5,  # Chậm nhất nhưng sát thương cao
                 "color": "#9b59b6",
                 "description": "Gây sát thương lớn với tầm xa"
