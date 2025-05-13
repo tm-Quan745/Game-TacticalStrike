@@ -442,6 +442,8 @@ class MazeTowerDefenseGame:
             self.wave_in_progress = True
             self.spawn_enemies()
             self.ui.start_button.configure(text="Làn Sóng Đang Diễn Ra...")
+            channels['gameon'].set_volume(1.0)
+            channels['gameon'].play(sound_effects['gameon'])
     
     def spawn_enemies(self):
         """Spawn enemies with sprite animations."""
