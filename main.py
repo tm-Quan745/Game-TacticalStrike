@@ -1,5 +1,7 @@
 import customtkinter as ctk
 from loading_screen import LoadingScreen
+from ui import channels, load_sound_effects 
+sound_effects = load_sound_effects()
 
 def main():
     # Set up the appearance mode and default color theme
@@ -9,7 +11,7 @@ def main():
     # Create the main window
     root = ctk.CTk()
     root.title("Mê Cung Tower Defense")
-    root.geometry("1200x800")  # Set initial window size
+    root.geometry("800x600")  # Set initial window size
     
     # Create loading screen
     loading_screen = LoadingScreen(root)

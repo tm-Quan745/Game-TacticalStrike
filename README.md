@@ -1,76 +1,41 @@
-# Các Thuật Toán Tìm Đường Trong Game Tower Defense
+# Mê Cung Tower Defense
 
-## Cấu Trúc Project
+## Giới Thiệu
+Mê Cung Tower Defense là trò chơi chiến thuật, nơi người chơi xây dựng tháp phòng thủ để ngăn kẻ địch vượt qua mê cung. Trò chơi sử dụng các thuật toán tìm đường thông minh và giao diện trực quan.
 
-### Thư Mục algorithms/
-Chứa các file cài đặt thuật toán và tài liệu chi tiết:
+## Cấu Trúc Dự Án
+- **`main.py`**: Điểm khởi đầu của trò chơi.
+- **`game_logic.py`**: Xử lý logic chính, quản lý tháp và kẻ địch.
+- **`ui.py`**: Giao diện người dùng.
+- **`entities.py`**: Định nghĩa kẻ địch và tháp.
+- **`pathfinding.py`**: Thuật toán tìm đường.
 
-1. **BFS (Breadth-First Search)**
-   - Code: `algorithms/bfs.py`
-   - Tài liệu: `algorithms/bfs_readme.md`
-   - Tìm đường ngắn nhất bằng cách duyệt theo chiều rộng
+## Hướng Dẫn Cài Đặt
+1. **Yêu Cầu**:
+   - Python 3.10 hoặc mới hơn.
+   - Thư viện: `customtkinter`, `pygame`, `Pillow`.
+2. **Cài Đặt**:
+   ```bash
+   pip install customtkinter pygame Pillow
+   ```
+3. **Chạy Trò Chơi**:
+   ```bash
+   python main.py
+   ```
 
-2. **DFS (Depth-First Search)**
-   - Code: `algorithms/dfs.py`
-   - Tài liệu: `algorithms/dfs_readme.md`
-   - Tìm đường bằng cách duyệt theo chiều sâu
+## Tính Năng Chính
+- Thuật toán tìm đường: BFS, DFS, Dijkstra, A*.
+- Giao diện trực quan và hiệu ứng âm thanh sống động.
 
-3. **Dijkstra**
-   - Code: `algorithms/dijkstra.py`
-   - Tài liệu: `algorithms/dijkstra_readme.md`
-   - Tìm đường ngắn nhất dựa trên chi phí di chuyển
+## Cách Chơi
+1. **Mục Tiêu**: Xây dựng các tháp phòng thủ để ngăn chặn kẻ địch vượt qua mê cung và bảo vệ căn cứ của bạn.
+2. **Xây Dựng Tháp**: Chọn vị trí chiến lược để đặt các tháp, mỗi loại tháp có khả năng đặc biệt:
+   - **Shooter Tower**: Tấn công nhanh với sát thương trung bình.
+   - **Freeze Tower**: Làm chậm kẻ địch trong phạm vi.
+   - **Sniper Tower**: Tầm bắn xa với sát thương cao.
+3. **Kẻ Địch**: Đối mặt với nhiều loại kẻ địch:
+   - **Normal**: Tốc độ và máu trung bình.
+   - **Fast**: Tốc độ cao nhưng máu thấp.
+   - **Tank**: Máu cao nhưng di chuyển chậm.
+4. **Chiến Thắng**: Tiêu diệt tất cả kẻ địch trước khi chúng đến căn cứ của bạn.
 
-4. **A* (A-Star)**
-   - Code: `algorithms/astar.py`
-   - Tài liệu: `algorithms/astar_readme.md`
-   - Tìm đường thông minh kết hợp chi phí và heuristic
-
-### File Chính
-- `pathfinding.py`: File điều phối các thuật toán
-- `game_logic.py`: Xử lý logic game chính
-- `ui.py`: Giao diện người dùng
-- `entities.py`: Định nghĩa các đối tượng trong game
-- `maze_generator.py`: Tạo mê cung ngẫu nhiên
-
-## Tổng Quan Thuật Toán
-
-### 1. BFS (Breadth-First Search)
-- Đặc điểm: Tìm đường theo chiều rộng
-- Độ phức tạp thời gian: O(V + E)
-- Chi tiết: Xem `algorithms/bfs_readme.md`
-
-### 2. DFS (Depth-First Search)
-- Đặc điểm: Tìm đường theo chiều sâu
-- Độ phức tạp không gian: O(H)
-- Chi tiết: Xem `algorithms/dfs_readme.md`
-
-### 3. Dijkstra
-- Đặc điểm: Tìm đường dựa trên chi phí
-- Độ phức tạp: O((V + E) * log V)
-- Chi tiết: Xem `algorithms/dijkstra_readme.md`
-
-### 4. A* (A-Star)
-- Đặc điểm: Kết hợp chi phí và heuristic
-- Hiệu quả nhất trong thực tế
-- Chi tiết: Xem `algorithms/astar_readme.md`
-
-## Đặc Điểm Chung
-- Tất cả các thuật toán đều:
-  * Chỉ có thể di chuyển theo 4 hướng (lên, xuống, trái, phải)
-  * Chỉ có thể đi qua các ô trống (giá trị 0 trong mê cung)
-  * Không đi qua các ô đã đi qua (tránh lặp vô hạn)
-  * Kiểm tra giới hạn của mê cung (0 ≤ x, y < grid_size)
-
-## Thực Hiện
-- Mỗi thuật toán được tách thành file riêng để dễ quản lý
-- File readme riêng giải thích chi tiết từng thuật toán
-- Có thể dễ dàng thêm thuật toán mới vào hệ thống
-- Cấu trúc module hóa giúp dễ bảo trì và nâng cấp
-
-## So Sánh Chi Phí
-1. **Chi phí thấp nhất:** DFS (về mặt bộ nhớ)
-2. **Cân bằng nhất:** BFS (đảm bảo đường đi ngắn nhất)
-3. **Thông minh nhất:** A* (hiệu quả trong thực tế)
-4. **Linh hoạt nhất:** Dijkstra (tốt với chi phí khác nhau)
-
-Chi tiết về cài đặt, ưu nhược điểm và độ phức tạp của mỗi thuật toán có thể được tìm thấy trong file readme tương ứng trong thư mục algorithms/.
