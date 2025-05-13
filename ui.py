@@ -694,10 +694,10 @@ class GameUI:
                 "desc": "Học tăng cường để tìm đường tối ưu trực tiếp trên map hiện tại",
                 "color": "#2196F3"
             },
-            "And-Or":{
-                "name": "And-Or Search",
-                "desc": "Thuật toán kết hợp tìm kiếm tại các nút OR (chỉ cần một đường đi hợp lệ) và nút AND (cần kiểm tra tất cả các đường đi hợp lệ)",
-                "color": "#e1c391"
+            "Partial": {
+                "name": "Partial Observation Search",
+                "desc": "Thuật toán tìm đường dựa trên quan sát từng phần của mê cung, phù hợp với thực tế khi người chơi chỉ nhìn thấy phần xung quanh",
+                "color": "#9C27B0"
             }
         }
         

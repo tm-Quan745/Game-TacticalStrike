@@ -4,11 +4,11 @@ from typing import List, Tuple, Set, Dict
 class PartialObservationSearch:
     def __init__(self, grid_size: int, view_radius: int = 2):
         """
-        Initialize the partial observation search algorithm.
+        Khởi tạo thuật toán tìm đường với quan sát từng phần.
         
-        Args:
-            grid_size: The size of the maze grid (assumes square maze)
-            view_radius: How far the agent can see in each direction
+        Tham số:
+            grid_size: Kích thước của mê cung (giả định mê cung vuông)
+            view_radius: Phạm vi quan sát xung quanh agent
         """
         self.grid_size = grid_size
         self.view_radius = view_radius
@@ -16,61 +16,61 @@ class PartialObservationSearch:
         self.reset_belief_state()
 
     def reset_belief_state(self):
-        """Reset the belief state to unknown."""
-        # -1: Unknown, 0: Empty, 1: Wall
+        """Đặt lại trạng thái niềm tin về môi trường về trạng thái chưa biết."""
+        # -1: Chưa biết, 0: Ô trống, 1: Tường
         self.belief_state = [[-1] * self.grid_size for _ in range(self.grid_size)]
         
     def update_observation(self, current_pos: Tuple[int, int], maze: List[List[int]]):
         """
-        Update the belief state based on current observation.
+        Cập nhật trạng thái niềm tin dựa trên quan sát hiện tại.
         
-        Args:
-            current_pos: Current position (x, y)
-            maze: The actual maze state
+        Tham số:
+            current_pos: Vị trí hiện tại (x, y)
+            maze: Trạng thái thực tế của mê cung
         """
         x, y = current_pos
         for dy in range(-self.view_radius, self.view_radius + 1):
             for dx in range(-self.view_radius, self.view_radius + 1):
                 new_x, new_y = x + dx, y + dy
-                # Check if the position is within grid bounds
+                # Kiểm tra vị trí có nằm trong mê cung không
                 if (0 <= new_x < self.grid_size and 
                     0 <= new_y < self.grid_size and
-                    abs(dx) + abs(dy) <= self.view_radius):  # Manhattan distance check
+                    abs(dx) + abs(dy) <= self.view_radius):  # Kiểm tra khoảng cách Manhattan
                     self.belief_state[new_y][new_x] = maze[new_y][new_x]
 
     def heuristic(self, a: Tuple[int, int], b: Tuple[int, int]) -> float:
-        """Calculate the Manhattan distance heuristic."""
+        """Tính khoảng cách Manhattan giữa hai điểm."""
         return abs(a[0] - b[0]) + abs(a[1] - b[1])
 
     def get_neighbors(self, pos: Tuple[int, int]) -> List[Tuple[int, int]]:
-        """Get valid neighboring positions."""
+        """Lấy danh sách các ô kề có thể đi được."""
         x, y = pos
         neighbors = []
         for dx, dy in [(0, 1), (1, 0), (0, -1), (-1, 0)]:
             nx, ny = x + dx, y + dy
             if (0 <= nx < self.grid_size and 
                 0 <= ny < self.grid_size and
-                self.belief_state[ny][nx] != 1):  # Not a known wall
+                self.belief_state[ny][nx] != 1):  # Không phải tường đã biết
                 neighbors.append((nx, ny))
         return neighbors
 
     def find_path(self, start: Tuple[int, int], goal: Tuple[int, int], 
                  maze: List[List[int]]) -> List[Tuple[int, int]]:
         """
-        Find a path using partial observation A* search.
+        Tìm đường đi sử dụng thuật toán A* với quan sát từng phần.
         
-        Args:
-            start: Starting position (x, y)
-            goal: Goal position (x, y)
-            maze: The actual maze for updating observations
+        Tham số:
+            start: Vị trí bắt đầu (x, y)
+            goal: Vị trí đích (x, y)
+            maze: Mê cung thực tế để lấy thông tin quan sát
             
-        Returns:
-            List of positions forming the path, or None if no path is found
+        Trả về:
+            Danh sách các vị trí tạo thành đường đi, hoặc None nếu không tìm thấy đường
         """
-        # Update initial observation
+        # Cập nhật quan sát ban đầu
         self.update_observation(start, maze)
         
-        # Priority queue storing (f_score, g_score, position, path)
+        # Hàng đợi ưu tiên lưu (điểm f, điểm g, vị trí hiện tại, đường đi)
         queue = [(0, 0, start, [start])]
         visited = set()
         g_scores = {start: 0}
@@ -78,7 +78,7 @@ class PartialObservationSearch:
         while queue:
             f_score, g_score, current, path = heapq.heappop(queue)
             
-            # Update observation at current position
+            # Cập nhật quan sát tại vị trí hiện tại
             self.update_observation(current, maze)
             
             if current == goal:
@@ -104,21 +104,21 @@ class PartialObservationSearch:
         return None
 
     def get_belief_state(self) -> List[List[int]]:
-        """Return the current belief state of the environment."""
+        """Trả về trạng thái niềm tin hiện tại về môi trường."""
         return self.belief_state
 
 def find_path_with_partial_observation(maze: List[List[int]], grid_size: int, 
                                     view_radius: int = 2) -> List[Tuple[int, int]]:
     """
-    Wrapper function to find a path through the maze with partial observation.
+    Hàm wrapper để tìm đường đi qua mê cung với quan sát từng phần.
     
-    Args:
-        maze: The complete maze grid
-        grid_size: Size of the maze
-        view_radius: How far the agent can see
+    Tham số:
+        maze: Mê cung đầy đủ
+        grid_size: Kích thước mê cung
+        view_radius: Bán kính quan sát
         
-    Returns:
-        List of positions forming the path, or None if no path is found
+    Trả về:
+        Danh sách các vị trí tạo thành đường đi, hoặc None nếu không tìm thấy đường
     """
     searcher = PartialObservationSearch(grid_size, view_radius)
     start = (0, 0)
