@@ -43,7 +43,8 @@ class Tower:
             'attack_cooldown': 0,  # Initialize cooldown
             'health': 100,         # Add base health
             'max_health': 100,     # Add max health
-            'show_range': False
+            'show_range': False,
+            'active_projectiles': 0  # Track number of active projectiles
         }
 
     @staticmethod
@@ -75,7 +76,45 @@ class Tower:
             start_x = tower['x'] * cell_size + cell_size/2
             start_y = tower['y'] * cell_size + cell_size/2
             
-            print(f"[SOUND] {tower['type']} tower attacking")
+            # Calculate direction to target
+            dx = target['x'] - start_x
+            dy = target['y'] - start_y
+            dist = math.sqrt(dx*dx + dy*dy)
+            
+            # Set speed based on tower type
+            if tower['type'] == 'sniper':
+                speed = 400  # Faster for sniper
+            elif tower['type'] == 'freezer':
+                speed = 150  # Slower for freezer
+            else:
+                speed = 250  # Default speed
+            
+            if dist > 0:
+                dx = dx / dist * speed
+                dy = dy / dist * speed
+
+            # Create projectile with all necessary properties
+            projectile = {
+                'x': start_x,
+                'y': start_y,
+                'dx': dx,
+                'dy': dy,
+                'speed': speed,  # Add speed property
+                'tower_type': tower['type'],
+                'damage': tower['damage'],
+                'target_x': target['x'],
+                'target_y': target['y'],
+                'sprite': sprite,
+                'animation_timer': 0,
+                'current_frame': 0,
+                'initial_x': start_x,
+                'initial_y': start_y,
+                'tower_range': tower['range'] * cell_size
+            }
+            projectiles.append(projectile)
+            print(f"[DEBUG] Created projectile at ({start_x}, {start_y}) with range {tower['range'] * cell_size} and speed {speed}")
+            
+            # Play sound effect if available
             try:
                 if tower['type'] == 'shooter':
                     sound = sound_effects['tower_attack_fire']
@@ -89,8 +128,7 @@ class Tower:
                 else:
                     print(f"[ERROR] Unknown tower type: {tower['type']}")
                     return
-
-                print(f"[DEBUG] Sound exists: {sound is not None}, Channel busy: {channel.get_busy()}")
+                
                 sound.set_volume(1.0)
                 if not channel.get_busy():
                     channel.play(sound)
@@ -98,41 +136,10 @@ class Tower:
             except Exception as e:
                 print(f"[ERROR] Sound play failed: {e}")
                 
-            projectile = Projectile.create(
-                start_x, start_y,
-                target['x'], target['y'],
-                tower['damage'],
-                tower['type'],
-                target  # Pass target enemy reference
-            )
-            # Calculate position and direction
-            tower_x = tower['x'] * cell_size + cell_size/2
-            tower_y = tower['y'] * cell_size + cell_size/2
-            dx = target['x'] - tower_x
-            dy = target['y'] - tower_y
-            dist = math.sqrt(dx*dx + dy*dy)
-            if dist > 0:
-                dx = dx / dist * 200  # Speed of 200 pixels per second
-                dy = dy / dist * 200
-
-            # Create projectile directly
-            projectile = {
-                'x': tower_x,
-                'y': tower_y,
-                'dx': dx,
-                'dy': dy,
-                'tower_type': tower['type'],
-                'damage': tower['damage'],
-                'target_x': target['x'],
-                'target_y': target['y'],
-                'sprite': sprite,
-                'animation_timer': 0,
-                'current_frame': 0
-            }
-            projectiles.append(projectile)
-            tower['attack_cooldown'] = 1.0 / tower['fire_rate']  # Reset cooldown based on fire rate
+            return projectile
         else:
             tower['attack_cooldown'] -= dt
+            return None
 
 class Enemy:
     @staticmethod
