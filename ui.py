@@ -738,18 +738,23 @@ class GameUI:
     
     def select_algorithm(self, algorithm, window):
         """Select an algorithm and update the UI"""
+        # Close window first to prevent hanging
+        window.destroy()
+        
         self.game.selected_algo.set(algorithm)
-        self.game.find_paths()
         algo_name = self.game.selected_algo.get()
         algo_color = {
             "BFS": "#4CAF50",
             "A*": "#FF9800",
             "Beam": "#705446",
-            "And-Or": "#e1c391"
+            "Partial": "#9C27B0",
+            "Q-Learning": "#2196F3"
         }.get(algorithm, "#FFFFFF")
         self.update_algorithm_button(algo_name, algo_color)
-        print(algo_name)
-        window.destroy()
+        print(f"Selected algorithm: {algo_name}")
+        
+        # Find paths after UI updates
+        self.game.find_paths()
         
     def update_algorithm_button(self, algo_name, algo_color):
         """Update the algorithm button's text and color based on the selected algorithm"""

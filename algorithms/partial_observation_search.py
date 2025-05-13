@@ -1,5 +1,6 @@
 import heapq
 from typing import List, Tuple, Set, Dict
+from radar_view import RadarView
 
 class PartialObservationSearch:
     def __init__(self, grid_size: int, view_radius: int = 2):
@@ -14,6 +15,7 @@ class PartialObservationSearch:
         self.view_radius = view_radius
         self.belief_state = None
         self.reset_belief_state()
+        self.radar_view = None
 
     def reset_belief_state(self):
         """Đặt lại trạng thái niềm tin về môi trường về trạng thái chưa biết."""
@@ -33,10 +35,14 @@ class PartialObservationSearch:
             for dx in range(-self.view_radius, self.view_radius + 1):
                 new_x, new_y = x + dx, y + dy
                 # Kiểm tra vị trí có nằm trong mê cung không
-                if (0 <= new_x < self.grid_size and 
+                if (0 <= new_x < self.grid_size and
                     0 <= new_y < self.grid_size and
                     abs(dx) + abs(dy) <= self.view_radius):  # Kiểm tra khoảng cách Manhattan
                     self.belief_state[new_y][new_x] = maze[new_y][new_x]
+        
+        # Cập nhật radar view nếu có
+        if self.radar_view:
+            self.radar_view.update_view(maze, self.belief_state)
 
     def heuristic(self, a: Tuple[int, int], b: Tuple[int, int]) -> float:
         """Tính khoảng cách Manhattan giữa hai điểm."""
@@ -121,6 +127,19 @@ def find_path_with_partial_observation(maze: List[List[int]], grid_size: int,
         Danh sách các vị trí tạo thành đường đi, hoặc None nếu không tìm thấy đường
     """
     searcher = PartialObservationSearch(grid_size, view_radius)
+    # Tạo radar view
+    import tkinter as tk
+    root = tk.Tk()
+    root.withdraw()  # Ẩn cửa sổ gốc
+    searcher.radar_view = RadarView(root, grid_size, 20)  # cell_size = 20
+    searcher.radar_view.show()
+    
     start = (0, 0)
     goal = (grid_size - 1, grid_size - 1)
-    return searcher.find_path(start, goal, maze)
+    path = searcher.find_path(start, goal, maze)
+    
+    if path is None:
+        searcher.radar_view.hide()
+        root.destroy()
+    
+    return path
