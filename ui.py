@@ -2,7 +2,40 @@ import tkinter as tk
 import customtkinter as ctk
 from PIL import Image, ImageTk
 import math
+import pygame
+pygame.mixer.init()
+pygame.mixer.set_num_channels(12)
 
+channels = {
+    'enemy_walk': pygame.mixer.Channel(0),
+    'enemy_attack': pygame.mixer.Channel(1),
+    'tower_attack_fire': pygame.mixer.Channel(2),
+    'tower_attack_ice' : pygame.mixer.Channel(3),
+    'tower_attack_sniper' : pygame.mixer.Channel(4),
+    'tower_explosion': pygame.mixer.Channel(5),
+    'gameon' : pygame.mixer.Channel(6),
+    'gameover' : pygame.mixer.Channel(7),
+    'intro': pygame.mixer.Channel(8)
+}
+
+def load_sound_effects():
+    
+    sounds = {
+        'tower_attack_fire': pygame.mixer.Sound('sound_effect/fire_shot.mp3'),
+        'tower_attack_ice' : pygame.mixer.Sound('sound_effect/ice_shot.mp3'),
+        'tower_attack_sniper': pygame.mixer.Sound('sound_effect/sniper_shot.mp3'),
+        'tower_explosion' : pygame.mixer.Sound('sound_effect/tower_destroy.mp3'),
+        'enemy_walk': pygame.mixer.Sound('sound_effect/footsteps.mp3'),
+        'enemy_attack': pygame.mixer.Sound('sound_effect/AK-47.mp3'),
+        'gameon' : pygame.mixer.Sound('sound_effect/game_on.wav'),
+        'gameover' : pygame.mixer.Sound('sound_effect/game_over.mp3'),
+        'intro': pygame.mixer.Sound('sound_effect/intro.mp3')
+    }
+    return sounds
+
+for i in range(pygame.mixer.get_num_channels()):
+    pygame.mixer.Channel(i).stop()
+    
 class GameUI:
     def __init__(self, root, game):
         self.enemy_id_counter = 0  # Counter for generating unique enemy IDs

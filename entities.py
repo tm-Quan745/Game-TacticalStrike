@@ -1,30 +1,8 @@
 import math
 from PIL import Image, ImageTk
 import pygame
-pygame.mixer.init()
+from ui import channels, load_sound_effects 
 
-channels = {
-    'enemy_walk': pygame.mixer.Channel(0),
-    'enemy_attack': pygame.mixer.Channel(1),
-    'tower_attack_fire': pygame.mixer.Channel(2),
-    'tower_attack_ice' : pygame.mixer.Channel(3),
-    'tower_attack_sniper' : pygame.mixer.Channel(4),
-    'tower_explosion': pygame.mixer.Channel(5),
-    'gameover' : pygame.mixer.Channel(6)
-}
-
-def load_sound_effects():
-    
-    sounds = {
-        'tower_attack_fire': pygame.mixer.Sound('sound_effect/fire_shot.mp3'),
-        'tower_attack_ice' : pygame.mixer.Sound('sound_effect/ice_shot.mp3'),
-        'tower_attack_sniper': pygame.mixer.Sound('sound_effect/sniper_shot.mp3'),
-        'tower_explosion' : pygame.mixer.Sound('sound_effect/tower_destroy.mp3'),
-        'enemy_walk': pygame.mixer.Sound('sound_effect/footsteps.mp3'),
-        'enemy_attack': pygame.mixer.Sound('sound_effect/AK-47.mp3'),
-        'gameover' : pygame.mixer.Sound('sound_effect/game_over.mp3')
-    }
-    return sounds
 sound_effects = load_sound_effects()
 
 for i in range(pygame.mixer.get_num_channels()):

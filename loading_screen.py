@@ -1,7 +1,20 @@
 import customtkinter as ctk
 from PIL import Image, ImageTk
 from game_logic import MazeTowerDefenseGame
+from ui import channels, load_sound_effects 
+import pygame
 
+sound_effects = load_sound_effects()
+
+for i in range(pygame.mixer.get_num_channels()):
+    pygame.mixer.Channel(i).stop()
+
+
+channels['intro'].set_volume(0.5)
+if not channels['intro'].get_busy():
+
+    channels['intro'].play(sound_effects['intro'])
+    
 class LoadingScreen:
     def __init__(self, root):
         self.root = root
@@ -115,6 +128,8 @@ class LoadingScreen:
         else:
             self.main_frame.destroy()
             self.game = MazeTowerDefenseGame(self.root)
+            channels['intro'].fadeout(1000)
+
         
     def show_help(self):
         help_window = ctk.CTkToplevel(self.root)

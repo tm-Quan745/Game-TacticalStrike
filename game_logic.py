@@ -8,12 +8,15 @@ from pathfinding import find_path
 from entities import Tower, Enemy, Projectile,EnemyProjectile
 from PIL import Image, ImageTk
 import customtkinter as ctk
-from entities import channels, load_sound_effects 
-
-sound_effects = load_sound_effects()
+from ui import channels, load_sound_effects 
 import math
 from radar_view import RadarView
-
+import pygame
+pygame.mixer.init()
+for i in range(pygame.mixer.get_num_channels()):
+    pygame.mixer.Channel(i).stop()
+    
+sound_effects = load_sound_effects()
 class MazeTowerDefenseGame:
     def __init__(self, root):
         self.enemy_counter = 0  # Counter for generating unique enemy IDs
@@ -168,7 +171,6 @@ class MazeTowerDefenseGame:
         # Reset UI
         self.ui.status_label.configure(text="Hãy xây tháp và bắt đầu!")
         self.ui.start_button.configure(text="Bắt Đầu Làn Sóng", state="normal")
-        
         # Find paths for all algorithms
         self.find_paths()
   
