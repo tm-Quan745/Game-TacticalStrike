@@ -24,7 +24,7 @@ class MazeTowerDefenseGame:
         
         # Game parameters
         self.grid_size = 13
-        self.cell_size = 45
+        self.cell_size = 68
         self.cols = self.grid_size
         self.rows = self.grid_size  # Add this line to fix the error
         self.initial_money = 100  # Add initial money value
@@ -270,7 +270,8 @@ class MazeTowerDefenseGame:
             dy_from_tower = projectile['y'] - projectile['initial_y']
             dist_from_tower = math.sqrt(dx_from_tower*dx_from_tower + dy_from_tower*dy_from_tower)
             
-            # Nếu vượt quá tầm bắn -> xóa ngay lập tức
+            # Nếu vượt quá 
+            # -> xóa ngay lập tức
             if dist_from_tower > projectile['tower_range']:
                 print(f"[DEBUG] Removing projectile - Distance {dist_from_tower:.2f} > Range {projectile['tower_range']}")
                 if projectile.get('sprite'):
@@ -451,11 +452,11 @@ class MazeTowerDefenseGame:
             if not hasattr(self, 'enemy_sprites'):
                 
                 # Load sprites
-                walk_right = self.ui.load_sprites(f"{self.sprite_path}walkright.png", 4)
-                walk_left = self.ui.load_sprites(f"{self.sprite_path}walkleft.png", 4) 
-                walk_updown = self.ui.load_sprites(f"{self.sprite_path}walkup.png", 4)
-                shoot_right = self.ui.load_sprites(f"{self.sprite_path}shoot_right.png", 4)
-                shoot_left = self.ui.load_sprites(f"{self.sprite_path}shoot_left.png", 4)
+                walk_right = self.ui.load_sprites(f"{self.sprite_path}walkright.png", 4, target_size=(32,32))
+                walk_left = self.ui.load_sprites(f"{self.sprite_path}walkleft.png", 4, target_size=(32,32)) 
+                walk_updown = self.ui.load_sprites(f"{self.sprite_path}walkup.png", 4, target_size=(20,30))
+                shoot_right = self.ui.load_sprites(f"{self.sprite_path}shoot_right.png", 4, target_size=(32,32))
+                shoot_left = self.ui.load_sprites(f"{self.sprite_path}shoot_left.png", 4, target_size=(32,32))
                 
                 self.enemy_sprites = {
                     'walk_right': walk_right,
@@ -745,6 +746,7 @@ class MazeTowerDefenseGame:
         help_window = ctk.CTkToplevel(self.root)
         help_window.title("Hướng Dẫn")
         help_window.geometry("400x500")
+        help_window.grab_set()
         
         # Tạo frame chứa nội dung với màu nền sáng
         content_frame = ctk.CTkFrame(help_window, fg_color=("#F5F5F5", "#F5F5F5"))
@@ -753,7 +755,7 @@ class MazeTowerDefenseGame:
         # Tiêu đề với màu xanh lá
         ctk.CTkLabel(content_frame, 
                     text="HƯỚNG DẪN GAME", 
-                    font=ctk.CTkFont(size=24, weight="bold"),
+                    font=ctk.CTkFont(family="Minecraft", size=24, weight="bold"),
                     text_color="#2E7D32").pack(pady=10)
         
         # Nội dung hướng dẫn với màu nền trắng
@@ -761,7 +763,7 @@ class MazeTowerDefenseGame:
                                  wrap="word",
                                  fg_color=("#FFFFFF", "#FFFFFF"),
                                  text_color="#1B5E20",
-                                 font=ctk.CTkFont(size=14))
+                                 font=ctk.CTkFont(family="Minecraft", size=14))
         text_box.pack(fill="both", expand=True, padx=10, pady=10)
         text_box.insert("1.0", help_text)
         text_box.configure(state="disabled")
@@ -769,15 +771,17 @@ class MazeTowerDefenseGame:
         # Nút đóng với màu xanh dương
         ctk.CTkButton(content_frame, 
                      text="Đóng",
-                     font=ctk.CTkFont(size=14, weight="bold"),
+                     font=ctk.CTkFont(family="Minecraft", size=14, weight="bold"),
                      fg_color="#2196F3",
                      hover_color="#1976D2",
                      command=help_window.destroy).pack(pady=10)
 
     def set_build_mode(self, mode):
         self.build_mode = mode
-        
+
         try:
+            minecraft_font_info = ctk.CTkFont(family="Minecraft", size=13)
+
             # Update the tower info display
             if mode in self.tower_types:
                 tower = self.tower_types[mode]
@@ -786,17 +790,26 @@ class MazeTowerDefenseGame:
                 info_text += f"Tầm bắn: {tower['range']} ô\n"
                 info_text += f"Tốc độ bắn: {100/tower['fire_rate']:.1f}/s\n\n"
                 info_text += f"{tower['description']}"
-                
+
                 if hasattr(self.ui, 'tower_info_label'):
-                    self.ui.tower_info_label.configure(text=info_text)
+                    self.ui.tower_info_label.configure(text=info_text, font=minecraft_font_info)
+
             elif mode == "delete":
                 if hasattr(self.ui, 'tower_info_label'):
-                    self.ui.tower_info_label.configure(text="Chọn tháp để xóa và nhận lại 5$")
+                    self.ui.tower_info_label.configure(
+                        text="Chọn tháp để xóa và nhận lại 5$",
+                        font=minecraft_font_info
+                    )
+
             else:
                 if hasattr(self.ui, 'tower_info_label'):
-                    self.ui.tower_info_label.configure(text="Chọn tháp để xem thông tin chi tiết")
+                    self.ui.tower_info_label.configure(
+                        text="Chọn tháp để xem thông tin chi tiết",
+                        font=minecraft_font_info
+                    )
         except Exception as e:
             print(f"Error updating tower info: {e}")
+
 
     def build_tower(self, x, y, tower_type):
         if self.can_build(x, y, tower_type):

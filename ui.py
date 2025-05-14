@@ -128,7 +128,7 @@ class GameUI:
                 self.enemy_projectile_frames = [self.default_frame] * 4
             
             # Load tower sprites
-            tower_size = (32, 32)  # Kích thước tower
+            tower_size = (60, 60)  # Kích thước tower
             
             shooter = Image.open("./sprites/shooter_tower.png")
             shooter = shooter.resize(tower_size, Image.Resampling.LANCZOS)
@@ -197,7 +197,7 @@ class GameUI:
         title_label = ctk.CTkLabel(game_frame, text="MÊ CUNG TOWER DEFENSE",
                                 font=ctk.CTkFont(family="Minecraft", size=24, weight="bold"),
                                 text_color="#2E7D32")
-        title_label.pack(pady=(0, 10))
+        title_label.pack(pady=(10, 10))
         
         # Maze canvas
         self.canvas = tk.Canvas(game_frame,
@@ -292,6 +292,7 @@ class GameUI:
         info_title.pack(pady=5)
         
         # Game info labels
+        
         self.money_label = ctk.CTkLabel(
             info_frame,
             text=f"Tiền: {self.game.money}$",
@@ -603,9 +604,9 @@ class GameUI:
                 # Health bar background
                 self.canvas.create_rectangle(
                     enemy['x'] - bar_width/2,
-                    enemy['y'] - 20,
+                    enemy['y'] - 25,
                     enemy['x'] + bar_width/2,
-                    enemy['y'] - 20 + bar_height,
+                    enemy['y'] - 25 + bar_height,
                     fill="red",
                     tags="health_bar"
                 )
@@ -613,9 +614,9 @@ class GameUI:
                 # Current health bar
                 self.canvas.create_rectangle(
                     enemy['x'] - bar_width/2,
-                    enemy['y'] - 20,
+                    enemy['y'] - 25,
                     enemy['x'] - bar_width/2 + bar_width * health_ratio,
-                    enemy['y'] - 20 + bar_height,
+                    enemy['y'] - 25 + bar_height,
                     fill="green",
                     tags="health_bar"
                 )
@@ -661,36 +662,32 @@ class GameUI:
         self.canvas.tag_raise("damage_text")  # Damage text highest
     
     
-    def load_sprites(self, sheet_path, num_frames):
-        """Load sprite sheet and split into frames."""        
+    def load_sprites(self, sheet_path, num_frames, target_size=(32, 32)):
+        """Load sprite sheet, split into frames, and resize each frame to target_size."""
         try:
-            sheet = Image.open(sheet_path)
+            sheet = Image.open(sheet_path).convert("RGBA")
             print(f"Loading sprite sheet: {sheet_path}")
-            
-            # Resize để projectile sprite nhỏ hơn
-            if 'shoot' in sheet_path:
-                new_width = sheet.width // 3  # Giảm kích thước projectile
-                new_height = sheet.height // 3
-            else:
-                new_width = sheet.width // 2
-                new_height = sheet.height // 2
-                
-            sheet = sheet.resize((new_width, new_height), Image.Resampling.LANCZOS)
-            
-            # Tính toán kích thước frame mới
-            frame_width = new_width // num_frames
-            frame_height = new_height
+
+            frame_width = sheet.width // num_frames
+            frame_height = sheet.height
+
             frames = []
-            
+
             for i in range(num_frames):
                 frame = sheet.crop((i * frame_width, 0, (i + 1) * frame_width, frame_height))
+                
+                # Resize từng frame sau khi crop (đảm bảo rõ nét và đúng tỉ lệ)
+                frame = frame.resize(target_size, Image.Resampling.LANCZOS)
+
                 frames.append(ImageTk.PhotoImage(frame))
-            
+
             return frames
+
         except Exception as e:
             print(f"Error loading sprite sheet {sheet_path}: {e}")
-            placeholder = Image.new('RGBA', (16, 16), 'red')
+            placeholder = Image.new('RGBA', target_size, 'red')
             return [ImageTk.PhotoImage(placeholder)]
+
     
     def show_algorithm_selector(self):
         """Show algorithm selection window"""
