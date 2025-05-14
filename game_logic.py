@@ -44,6 +44,8 @@ class MazeTowerDefenseGame:
         self.build_mode = None
         self.sprite_path = "./sprites/"
         self.enemy_projectiles = []
+        self.wave_start_time = 0
+        self.timeline = 0
         
         # Tower info
         self.tower_types = {
@@ -424,9 +426,10 @@ class MazeTowerDefenseGame:
             # Tăng phần thưởng theo wave
             wave_bonus = 20 + self.current_wave * 10
             self.money += wave_bonus
-            
+            self.timeline = time.time() - self.wave_start_time
             # Thông báo hoàn thành wave và chỉ số mới            
             completion_text = f"Hoàn thành làn sóng {self.current_wave-1}!\n"
+            completion_text = f"Hoàn thành làn sóng sau {self.timeline:.2f}s\n"
             completion_text += f"Nhận thưởng: {wave_bonus}$\n"
             completion_text += f"\nLàn sóng tiếp theo:\n"
             completion_text += f"- Số lượng địch: {8 + int(self.current_wave * 4)}\n"
@@ -440,6 +443,7 @@ class MazeTowerDefenseGame:
     
     def start_wave(self):
         if not self.wave_in_progress:
+            self.wave_start_time = time.time()
             self.wave_in_progress = True
             self.spawn_enemies()
             self.ui.start_button.configure(text="Làn Sóng Đang Diễn Ra...")

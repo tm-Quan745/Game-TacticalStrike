@@ -41,7 +41,8 @@ class GameUI:
         self.enemy_id_counter = 0  # Counter for generating unique enemy IDs
         self.root = root
         self.game = game
-          # Create default sprites for error cases
+
+        # Create default sprites for error cases
         default_proj = Image.new('RGBA', (16, 16), '#FF0000')
         self.default_frame = ImageTk.PhotoImage(default_proj)
         
@@ -292,6 +293,13 @@ class GameUI:
         info_title.pack(pady=5)
         
         # Game info labels
+        self.timeline_label = ctk.CTkLabel(
+            info_frame,
+            text=f"Thời gian đến đích: {self.game.wave_start_time}s",
+            font=ctk.CTkFont(family="Minecraft", size=14),
+            text_color="#1B5E20"
+        )
+        self.timeline_label.pack(anchor=tk.W, padx=5, pady=2)
         
         self.money_label = ctk.CTkLabel(
             info_frame,
@@ -463,6 +471,7 @@ class GameUI:
     
     def update_info_labels(self):
         """Update all information labels with current game state."""
+        self.timeline_label.configure(text=f"Thời gian đến đích: {self.game.timeline:.2f}s")
         self.money_label.configure(text=f"Tiền: {self.game.money}$")
         self.lives_label.configure(text=f"Mạng: {self.game.lives}")
         self.wave_label.configure(text=f"Làn sóng: {self.game.current_wave}")
