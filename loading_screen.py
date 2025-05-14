@@ -23,70 +23,97 @@ class LoadingScreen:
         self.setup_loading_screen()
         
     def setup_loading_screen(self):
-        # Main frame
-        self.main_frame = ctk.CTkFrame(self.root)
+        # Lấy kích thước cửa sổ
+        width = self.root.winfo_screenwidth()
+        height = self.root.winfo_screenheight()
+
+        # Tạo canvas để chứa ảnh nền
+        self.canvas = ctk.CTkCanvas(self.root, width=width, height=height, highlightthickness=0)
+        self.canvas.pack(fill="both", expand=True)
+
+        # Save the original background image for resizing
+        self.bg_image_original = Image.open("./sprites/background.png")
+        self.bg_image = self.bg_image_original.resize((width, height), Image.Resampling.LANCZOS)
+        self.bg_photo = ImageTk.PhotoImage(self.bg_image)
+        self.bg_image_id = self.canvas.create_image(0, 0, image=self.bg_photo, anchor="nw")
+
+        # Main frame for loading screen
+        self.main_frame = ctk.CTkFrame(self.root, fg_color="#FFFFFF")
         self.main_frame.pack(fill="both", expand=True)
-        
-        # Title
+
+        # ======= Label và Button trực tiếp =======
+
+        # Tiêu đề
         self.title_label = ctk.CTkLabel(
-            self.main_frame,
-            text="MÊ CUNG TOWER DEFENSE",
+            self.root,
+            text="Tactical Strike",
             font=ctk.CTkFont(family="Minecraft", size=36, weight="bold"),
-            text_color="#A5D6A7"  # Nhạt ban đầu
+            text_color="#1B5E20",  # màu chữ xanh đậm
+            bg_color="#0D1C2C"     # nền xanh nhạt
         )
-        self.title_label.pack(pady=(100, 20))
-        
-        # Subtitle
+        self.title_label.place(relx=0.5, rely=0.3, anchor="center")
+
+        # Phụ đề
         subtitle_label = ctk.CTkLabel(
-            self.main_frame,
+            self.root,
             text="Tower Defense phòng thủ mê cung",
             font=ctk.CTkFont(family="Minecraft", size=18),
-            text_color="#1B5E20"
+            text_color="#2E7D32",
+            bg_color="#0D1C2C"     # nền trắng
         )
-        subtitle_label.pack(pady=(0, 50))
-        
-        # Start button
+        subtitle_label.place(relx=0.5, rely=0.38, anchor="center")
+
+
+
+        # Nút Bắt Đầu
         self.start_button = ctk.CTkButton(
-            self.main_frame,
+            self.root,
             text="Bắt Đầu Chơi",
             font=ctk.CTkFont(family="Minecraft", size=24, weight="bold"),
             fg_color="#4CAF50",
             hover_color="#388E3C",
             width=200,
             height=60,
-            command=self.start_game
+            command=self.start_game,
+            bg_color="#0D1C2C"    
         )
-        self.start_button.pack(pady=20)
-        
-        # Help button
+        self.start_button.place(relx=0.5, rely=0.5, anchor="center")
+
+        # Nút Hướng Dẫn
         help_button = ctk.CTkButton(
-            self.main_frame,
+            self.root,
             text="Hướng Dẫn",
             font=ctk.CTkFont(family="Minecraft", size=18),
             fg_color="#2196F3",
             hover_color="#1976D2",
             width=150,
             height=40,
-            command=self.show_help
+            command=self.show_help,
+            bg_color="#0D1C2C"
         )
-        help_button.pack(pady=10)
-        
-        # Exit button
+        help_button.place(relx=0.5, rely=0.6, anchor="center")
+
+        # Nút Thoát
         exit_button = ctk.CTkButton(
-            self.main_frame,
+            self.root,
             text="Thoát",
             font=ctk.CTkFont(family="Minecraft", size=18),
             fg_color="#F44336",
             hover_color="#D32F2F",
             width=150,
             height=40,
-            command=self.root.quit
+            command=self.root.quit,
+            bg_color="#0D1C2C"
         )
-        exit_button.pack(pady=10)
-        
-        # Start animations
+        exit_button.place(relx=0.5, rely=0.68, anchor="center")
+
+        # Hiệu ứng
         self.fade_in_title()
         self.pulse_button()
+
+        # Dynamically resize background image when the window is resized
+        self.root.bind("<Configure>", self.resize_background)
+
         
     def fade_in_title(self):
         # Fade màu từ nhạt đến đậm xanh (#A5D6A7 → #2E7D32)
@@ -114,7 +141,8 @@ class LoadingScreen:
             self.main_frame,
             text="Đang khởi động trò chơi",
             font=ctk.CTkFont(family="Minecraft", size=18),
-            text_color="#1B5E20"
+            text_color="#1B5E20",
+            bg_color="#0D1C2C"  # nền trắng
         )
         loading_label.pack(pady=20)
         
@@ -127,6 +155,7 @@ class LoadingScreen:
             self.root.after(300, lambda: self.animate_spinner(label, count + 1))
         else:
             self.main_frame.destroy()
+            self.canvas.destroy()  # Nếu sử dụng canvas làm main_frame
             self.game = MazeTowerDefenseGame(self.root)
             channels['intro'].fadeout(1000)
 
@@ -161,3 +190,20 @@ class LoadingScreen:
             justify="left"
         )
         help_label.pack(padx=20, pady=20)
+
+    def resize_background(self, event):
+        # Use winfo_height to ensure accurate height
+        new_width = event.width
+        new_height = self.root.winfo_height()
+
+        # Resize the original background image
+        resized_bg = self.bg_image_original.resize((new_width, new_height), Image.Resampling.LANCZOS)
+        self.bg_photo = ImageTk.PhotoImage(resized_bg)
+
+        # Update the background image in the canvas
+        self.canvas.itemconfig(self.bg_image_id, image=self.bg_photo)
+
+        # Update the canvas size (if needed)
+        self.canvas.config(width=new_width, height=new_height)
+
+
