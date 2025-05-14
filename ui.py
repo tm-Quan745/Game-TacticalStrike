@@ -1,3 +1,4 @@
+import time
 import tkinter as tk
 import customtkinter as ctk
 from PIL import Image, ImageTk
@@ -471,6 +472,9 @@ class GameUI:
     
     def update_info_labels(self):
         """Update all information labels with current game state."""
+        if self.game.wave_in_progress:
+            self.game.timeline = time.time() - self.game.wave_start_time
+            self.root.after(10, self.update_info_labels)
         self.timeline_label.configure(text=f"Thời gian đến đích: {self.game.timeline:.2f}s")
         self.money_label.configure(text=f"Tiền: {self.game.money}$")
         self.lives_label.configure(text=f"Mạng: {self.game.lives}")
@@ -841,7 +845,3 @@ class GameUI:
         self.current_theme = (self.current_theme + 1) % len(self.themes)
         self.load_theme_sprites(self.current_theme)
         self.theme_button.configure(text=f"Theme: {self.themes[self.current_theme]['name']}")
-
-
-
-
