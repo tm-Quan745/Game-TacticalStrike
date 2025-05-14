@@ -663,6 +663,10 @@ class MazeTowerDefenseGame:
         grid_x = event.x // self.cell_size
         grid_y = event.y // self.cell_size
         
+        # Clear previous tower ranges
+        for tower in self.towers:
+            tower['show_range'] = False
+
         # Update the status label with hover information
         if 0 <= grid_x < self.grid_size and 0 <= grid_y < self.grid_size:
             if (grid_x, grid_y) == (0, 0):

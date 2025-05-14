@@ -474,7 +474,6 @@ class GameUI:
         # Draw grid cells using sprites
         for y in range(self.game.grid_size):
             for x in range(self.game.grid_size):
-                # Wall cells use grass sprite, path cells use land sprite
                 sprite = self.tile_sprites['grass'] if self.game.maze[y][x] == 1 else self.tile_sprites['land']
                 if sprite:
                     self.canvas.create_image(
@@ -485,7 +484,6 @@ class GameUI:
                         tags="terrain"
                     )
                 else:
-                    # Fallback to colored rectangles if sprites failed to load
                     self.canvas.create_rectangle(
                         x * self.game.cell_size, y * self.game.cell_size,
                         (x + 1) * self.game.cell_size, (y + 1) * self.game.cell_size,
@@ -570,7 +568,9 @@ class GameUI:
                 y * self.game.cell_size - 2,
                 fill="green",
                 tags="tower"
-            )          # Draw enemies with their sprites and health bars
+            )
+
+        # Draw enemies with their sprites and health bars
         for enemy in self.game.enemies:
             if enemy['spawn_delay'] <= 0:
                 enemy_id = enemy.get('id', id(enemy))  # Gán ID duy nhất nếu chưa có 
@@ -629,7 +629,9 @@ class GameUI:
                         fill="red",
                         font=("Minecraft", 10, "bold"),
                         tags="damage_text"
-                    )        # Draw tower projectiles with rotation animation
+                    )
+
+        # Draw tower projectiles with rotation animation
         for proj in self.game.projectiles:
             # Calculate rotation frame based on projectile direction
             angle = math.atan2(proj['dy'], proj['dx'])
@@ -657,6 +659,7 @@ class GameUI:
         self.canvas.tag_raise("health_bar")   # Health bars above enemies
         self.canvas.tag_raise("projectile")   # Projectiles on top
         self.canvas.tag_raise("damage_text")  # Damage text highest
+    
     
     def load_sprites(self, sheet_path, num_frames):
         """Load sprite sheet and split into frames."""        
