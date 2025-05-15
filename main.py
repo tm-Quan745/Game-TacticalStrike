@@ -1,6 +1,8 @@
 import customtkinter as ctk
 from loading_screen import LoadingScreen
 from ui import channels, load_sound_effects 
+import pygame
+
 sound_effects = load_sound_effects()
 
 def main():
@@ -12,6 +14,10 @@ def main():
     root = ctk.CTk()
     root.title("Mê Cung Tower Defense")
     root.geometry("800x600")  # Set initial window size
+    pygame.init()
+
+    # Set the game icon using pygame
+    pygame.display.set_icon(pygame.image.load("./sprites/IconGame.png"))
     
     # Create loading screen
     loading_screen = LoadingScreen(root)
