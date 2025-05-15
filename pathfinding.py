@@ -5,6 +5,7 @@ from algorithms.astar import astar_find_path
 from algorithms.beam import beam_search_find_path
 from algorithms.partial_observation_search import find_path_with_partial_observation
 from algorithms.qlearning import qlearning_find_path
+from algorithms.backtracking import backtracking_find_path
 
 def find_path(maze, grid_size, algorithm="BFS"):
     """Find path using the specified algorithm."""
@@ -16,6 +17,8 @@ def find_path(maze, grid_size, algorithm="BFS"):
         path = beam_search_find_path(maze, grid_size)
     elif algorithm == "Partial":
         path = find_path_with_partial_observation(maze, grid_size)
+    elif algorithm == "Backtracking":
+        path = backtracking_find_path(maze, grid_size)
     elif algorithm == "Q-Learning":
         print("Đang áp dụng Q-learning cho map hiện tại...")
         path = qlearning_find_path(maze, grid_size)
