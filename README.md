@@ -87,4 +87,3 @@ Chạy file main.py ở command line:
 - Trần Minh Quận : https://github.com/tm-Quan745
 - Lê Thị Thanh Tâm : https://github.com/ltaamlee
 - Nguyễn Hoàng Thạch : https://github.com/Thach45
-
