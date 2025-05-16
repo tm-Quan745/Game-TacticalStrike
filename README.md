@@ -41,6 +41,17 @@ Xây dựng trò chơi chiến thuật giải trí kết hợp tư duy, giúp ng
   <img src="https://raw.githubusercontent.com/tm-Quan745/Game-TacticalStrike/Develop/readme_img/tower.gif" alt="Tower" />
 </p>
 
+### 4. Kẻ địch tấn công và tháp phòng thủ
+- Khi kẻ địch ở trong phạm vi tầm bắn của tháp, tháp sẽ tấn công và làm giảm lượng máu của kẻ địch.
+
+- Nếu tháp trong vùng cận chiến thì kẻ địch sẽ tiến hành tấn công vào tháp
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/tm-Quan745/Game-TacticalStrike/Develop/readme_img/shot.gif" alt="Shot" />
+</p>
+
+
+
 ## Các thuật toán áp dụng cho Enemy 
 ### 1. Uniformed Search : BFS
 -	Thuật toán tìm kiếm theo chiều rộng, khám phá đồng thời tất cả các nút ở cùng một độ sâu trước khi đi sâu hơn
