@@ -6,7 +6,7 @@
 ## 🎮 Giới thiệu trò chơi Tactical Strike
 Tactical Strike là một trò chơi thuộc thể loại Tower Defense (thủ thành chiến thuật), được phát triển bằng ngôn ngữ Python kết hợp với thư viện đồ họa Pygame và Tkinter. Trò chơi lấy cảm hứng từ các tựa game nổi tiếng như Plants vs. Zombies và Kingdom Rush, nơi người chơi có nhiệm vụ xây dựng các tháp phòng thủ để ngăn chặn từng đợt tấn công của kẻ địch đang tiến về căn cứ.
 
-Kẻ địch sẽ di chuyển theo các lộ trình cụ thể, và người chơi cần vận dụng chiến thuật cùng tư duy logic để bố trí tháp hợp lý, tận dụng các tính năng như gây sát thương, làm chậm, hoặc tiêu diệt nhằm bảo vệ căn cứ an toàn.
+Kẻ địch sẽ di chuyển theo các lộ trình cụ thể và người chơi cần vận dụng chiến thuật cùng tư duy logic để bố trí tháp hợp lý, tận dụng các tính năng như gây sát thương, làm chậm hoặc tiêu diệt nhằm bảo vệ căn cứ an toàn.
 ## 🎯 Mục tiêu của trò chơi
 Xây dựng trò chơi chiến thuật giải trí kết hợp tư duy, giúp người chơi vừa chơi vừa học thông qua việc tương tác với các yếu tố chiến thuật và trí tuệ nhân tạo; ứng dụng các thuật toán tìm kiếm trong AI như BFS, A*, Beam Search, Backtracking, Partial Observation, Q-Learning để mô phỏng hành vi di chuyển của kẻ địch.
 ## 🖥 Giao diện phần mềm
