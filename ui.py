@@ -723,7 +723,7 @@ class GameUI:
             "BFS": {
                 "name": "Breadth-First Search",
                 "desc": "Tìm đường ngắn nhất bằng cách duyệt theo chiều rộng",
-                "color": "#4CAF50"
+                "color": "#4C794E"
             },
             "A*": {
                 "name": "A* (A-Star)",

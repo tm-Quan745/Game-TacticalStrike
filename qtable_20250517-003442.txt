@@ -1,0 +1,787 @@
+Q-Learning Table
+===============
+
+State (0, 0):
+Vị trí (0, 0):
+  Đi Lên: [Tường]
+  Đi Phải: 821.69
+  Đi Xuống: 785.25
+  Đi Trái: [Tường]
+
+State (0, 1):
+Vị trí (0, 1):
+  Đi Lên: 506.95
+  Đi Phải: 800.95
+  Đi Xuống: 437.59
+  Đi Trái: [Tường]
+
+State (0, 10):
+Vị trí (0, 10):
+  Đi Lên: [Tường]
+  Đi Phải: 254.78
+  Đi Xuống: 257.88
+  Đi Trái: [Tường]
+
+State (0, 11):
+Vị trí (0, 11):
+  Đi Lên: 185.40
+  Đi Phải: 222.31
+  Đi Xuống: 225.03
+  Đi Trái: [Tường]
+
+State (0, 12):
+Vị trí (0, 12):
+  Đi Lên: 159.40
+  Đi Phải: 185.36
+  Đi Xuống: [Tường]
+  Đi Trái: [Tường]
+
+State (0, 2):
+Vị trí (0, 2):
+  Đi Lên: 496.41
+  Đi Phải: [Tường]
+  Đi Xuống: 264.72
+  Đi Trái: [Tường]
+
+State (0, 3):
+Vị trí (0, 3):
+  Đi Lên: 213.29
+  Đi Phải: 230.74
+  Đi Xuống: 225.84
+  Đi Trái: [Tường]
+
+State (0, 4):
+Vị trí (0, 4):
+  Đi Lên: 161.19
+  Đi Phải: 192.70
+  Đi Xuống: [Tường]
+  Đi Trái: [Tường]
+
+State (0, 6):
+Vị trí (0, 6):
+  Đi Lên: [Tường]
+  Đi Phải: 165.79
+  Đi Xuống: 237.27
+  Đi Trái: [Tường]
+
+State (0, 7):
+Vị trí (0, 7):
+  Đi Lên: 142.16
+  Đi Phải: [Tường]
+  Đi Xuống: 223.68
+  Đi Trái: [Tường]
+
+State (0, 8):
+Vị trí (0, 8):
+  Đi Lên: 123.89
+  Đi Phải: 214.59
+  Đi Xuống: [Tường]
+  Đi Trái: [Tường]
+
+State (1, 0):
+Vị trí (1, 0):
+  Đi Lên: [Tường]
+  Đi Phải: 812.31
+  Đi Xuống: 782.27
+  Đi Trái: 706.45
+
+State (1, 1):
+Vị trí (1, 1):
+  Đi Lên: 582.32
+  Đi Phải: 802.00
+  Đi Xuống: [Tường]
+  Đi Trái: 539.64
+
+State (1, 10):
+Vị trí (1, 10):
+  Đi Lên: [Tường]
+  Đi Phải: 178.06
+  Đi Xuống: 225.15
+  Đi Trái: 182.96
+
+State (1, 11):
+Vị trí (1, 11):
+  Đi Lên: 159.11
+  Đi Phải: [Tường]
+  Đi Xuống: 185.28
+  Đi Trái: 161.42
+
+State (1, 12):
+Vị trí (1, 12):
+  Đi Lên: 124.77
+  Đi Phải: 142.62
+  Đi Xuống: [Tường]
+  Đi Trái: 125.30
+
+State (1, 3):
+Vị trí (1, 3):
+  Đi Lên: [Tường]
+  Đi Phải: [Tường]
+  Đi Xuống: 195.03
+  Đi Trái: 160.81
+
+State (1, 4):
+Vị trí (1, 4):
+  Đi Lên: 131.07
+  Đi Phải: 160.26
+  Đi Xuống: [Tường]
+  Đi Trái: 129.48
+
+State (1, 6):
+Vị trí (1, 6):
+  Đi Lên: [Tường]
+  Đi Phải: 89.21
+  Đi Xuống: [Tường]
+  Đi Trái: 153.81
+
+State (1, 8):
+Vị trí (1, 8):
+  Đi Lên: [Tường]
+  Đi Phải: 201.43
+  Đi Xuống: [Tường]
+  Đi Trái: 120.54
+
+State (10, 0):
+Vị trí (10, 0):
+  Đi Lên: [Tường]
+  Đi Phải: 873.78
+  Đi Xuống: 864.91
+  Đi Trái: 778.79
+
+State (10, 1):
+Vị trí (10, 1):
+  Đi Lên: 519.95
+  Đi Phải: 866.99
+  Đi Xuống: 524.15
+  Đi Trái: [Tường]
+
+State (10, 10):
+Vị trí (10, 10):
+  Đi Lên: 899.99
+  Đi Phải: 1000.00
+  Đi Xuống: [Tường]
+  Đi Trái: [Tường]
+
+State (10, 12):
+Vị trí (10, 12):
+  Đi Lên: [Tường]
+  Đi Phải: 999.25
+  Đi Xuống: [Tường]
+  Đi Trái: 633.17
+
+State (10, 2):
+Vị trí (10, 2):
+  Đi Lên: 397.89
+  Đi Phải: [Tường]
+  Đi Xuống: 662.33
+  Đi Trái: [Tường]
+
+State (10, 3):
+Vị trí (10, 3):
+  Đi Lên: 400.69
+  Đi Phải: 776.94
+  Đi Xuống: 357.69
+  Đi Trái: [Tường]
+
+State (10, 4):
+Vị trí (10, 4):
+  Đi Lên: 429.91
+  Đi Phải: [Tường]
+  Đi Xuống: [Tường]
+  Đi Trái: 181.73
+
+State (10, 6):
+Vị trí (10, 6):
+  Đi Lên: [Tường]
+  Đi Phải: 881.89
+  Đi Xuống: 999.98
+  Đi Trái: [Tường]
+
+State (10, 7):
+Vị trí (10, 7):
+  Đi Lên: 899.07
+  Đi Phải: 904.47
+  Đi Xuống: 1000.00
+  Đi Trái: [Tường]
+
+State (10, 8):
+Vị trí (10, 8):
+  Đi Lên: 899.97
+  Đi Phải: [Tường]
+  Đi Xuống: 1000.00
+  Đi Trái: [Tường]
+
+State (10, 9):
+Vị trí (10, 9):
+  Đi Lên: 899.99
+  Đi Phải: [Tường]
+  Đi Xuống: 1000.00
+  Đi Trái: [Tường]
+
+State (11, 0):
+Vị trí (11, 0):
+  Đi Lên: [Tường]
+  Đi Phải: 862.94
+  Đi Xuống: 867.14
+  Đi Trái: 769.88
+
+State (11, 1):
+Vị trí (11, 1):
+  Đi Lên: 765.87
+  Đi Phải: 860.15
+  Đi Xuống: [Tường]
+  Đi Trái: 767.79
+
+State (11, 10):
+Vị trí (11, 10):
+  Đi Lên: [Tường]
+  Đi Phải: 995.92
+  Đi Xuống: 1000.00
+  Đi Trái: 899.24
+
+State (11, 11):
+Vị trí (11, 11):
+  Đi Lên: 899.52
+  Đi Phải: 999.44
+  Đi Xuống: 1000.00
+  Đi Trái: [Tường]
+
+State (11, 12):
+Vị trí (11, 12):
+  Đi Lên: 898.71
+  Đi Phải: 1000.00
+  Đi Xuống: [Tường]
+  Đi Trái: 894.39
+
+State (11, 3):
+Vị trí (11, 3):
+  Đi Lên: [Tường]
+  Đi Phải: 844.44
+  Đi Xuống: [Tường]
+  Đi Trái: 544.72
+
+State (11, 5):
+Vị trí (11, 5):
+  Đi Lên: [Tường]
+  Đi Phải: 770.33
+  Đi Xuống: 909.68
+  Đi Trái: [Tường]
+
+State (11, 6):
+Vị trí (11, 6):
+  Đi Lên: 810.74
+  Đi Phải: 817.76
+  Đi Xuống: 905.00
+  Đi Trái: 896.93
+
+State (11, 7):
+Vị trí (11, 7):
+  Đi Lên: 809.68
+  Đi Phải: [Tường]
+  Đi Xuống: [Tường]
+  Đi Trái: 900.00
+
+State (12, 0):
+Vị trí (12, 0):
+  Đi Lên: [Tường]
+  Đi Phải: [Tường]
+  Đi Xuống: 860.10
+  Đi Trái: 690.90
+
+State (12, 1):
+Vị trí (12, 1):
+  Đi Lên: 763.56
+  Đi Phải: [Tường]
+  Đi Xuống: 852.79
+  Đi Trái: 760.14
+
+State (12, 10):
+Vị trí (12, 10):
+  Đi Lên: 476.93
+  Đi Phải: [Tường]
+  Đi Xuống: 999.37
+  Đi Trái: 785.80
+
+State (12, 11):
+Vị trí (12, 11):
+  Đi Lên: 732.68
+  Đi Phải: [Tường]
+  Đi Xuống: 1000.00
+  Đi Trái: 788.77
+
+State (12, 12):
+Vị trí (12, 12):
+  Đi Lên: 0.00
+  Đi Phải: [Tường]
+  Đi Xuống: [Tường]
+  Đi Trái: 0.00
+
+State (12, 2):
+Vị trí (12, 2):
+  Đi Lên: 759.72
+  Đi Phải: [Tường]
+  Đi Xuống: 845.04
+  Đi Trái: [Tường]
+
+State (12, 3):
+Vị trí (12, 3):
+  Đi Lên: 750.99
+  Đi Phải: [Tường]
+  Đi Xuống: 836.88
+  Đi Trái: 748.99
+
+State (12, 4):
+Vị trí (12, 4):
+  Đi Lên: 744.73
+  Đi Phải: [Tường]
+  Đi Xuống: 828.30
+  Đi Trái: [Tường]
+
+State (12, 5):
+Vị trí (12, 5):
+  Đi Lên: 736.12
+  Đi Phải: [Tường]
+  Đi Xuống: 819.26
+  Đi Trái: 811.28
+
+State (12, 6):
+Vị trí (12, 6):
+  Đi Lên: 728.09
+  Đi Phải: [Tường]
+  Đi Xuống: [Tường]
+  Đi Trái: 809.75
+
+State (12, 8):
+Vị trí (12, 8):
+  Đi Lên: [Tường]
+  Đi Phải: [Tường]
+  Đi Xuống: 499.45
+  Đi Trái: [Tường]
+
+State (12, 9):
+Vị trí (12, 9):
+  Đi Lên: 209.51
+  Đi Phải: [Tường]
+  Đi Xuống: 811.43
+  Đi Trái: [Tường]
+
+State (2, 0):
+Vị trí (2, 0):
+  Đi Lên: [Tường]
+  Đi Phải: 773.82
+  Đi Xuống: 802.43
+  Đi Trái: 701.96
+
+State (2, 1):
+Vị trí (2, 1):
+  Đi Lên: 686.04
+  Đi Phải: 792.03
+  Đi Xuống: 622.96
+  Đi Trái: 671.48
+
+State (2, 10):
+Vị trí (2, 10):
+  Đi Lên: 96.30
+  Đi Phải: [Tường]
+  Đi Xuống: [Tường]
+  Đi Trái: 156.76
+
+State (2, 12):
+Vị trí (2, 12):
+  Đi Lên: [Tường]
+  Đi Phải: 97.50
+  Đi Xuống: [Tường]
+  Đi Trái: 85.47
+
+State (2, 2):
+Vị trí (2, 2):
+  Đi Lên: 666.77
+  Đi Phải: [Tường]
+  Đi Xuống: [Tường]
+  Đi Trái: [Tường]
+
+State (2, 4):
+Vị trí (2, 4):
+  Đi Lên: [Tường]
+  Đi Phải: [Tường]
+  Đi Xuống: 128.47
+  Đi Trái: 94.49
+
+State (2, 5):
+Vị trí (2, 5):
+  Đi Lên: 59.75
+  Đi Phải: [Tường]
+  Đi Xuống: 94.39
+  Đi Trái: [Tường]
+
+State (2, 6):
+Vị trí (2, 6):
+  Đi Lên: 21.50
+  Đi Phải: [Tường]
+  Đi Xuống: [Tường]
+  Đi Trái: 68.23
+
+State (2, 8):
+Vị trí (2, 8):
+  Đi Lên: [Tường]
+  Đi Phải: [Tường]
+  Đi Xuống: 194.04
+  Đi Trái: 86.53
+
+State (2, 9):
+Vị trí (2, 9):
+  Đi Lên: 93.84
+  Đi Phải: 98.81
+  Đi Xuống: 184.34
+  Đi Trái: [Tường]
+
+State (3, 0):
+Vị trí (3, 0):
+  Đi Lên: [Tường]
+  Đi Phải: 571.12
+  Đi Xuống: 790.92
+  Đi Trái: 551.88
+
+State (3, 1):
+Vị trí (3, 1):
+  Đi Lên: 687.10
+  Đi Phải: 781.09
+  Đi Xuống: [Tường]
+  Đi Trái: 690.48
+
+State (3, 11):
+Vị trí (3, 11):
+  Đi Lên: [Tường]
+  Đi Phải: 97.50
+  Đi Xuống: 97.50
+  Đi Trái: [Tường]
+
+State (3, 12):
+Vị trí (3, 12):
+  Đi Lên: 42.62
+  Đi Phải: 50.00
+  Đi Xuống: [Tường]
+  Đi Trái: 42.62
+
+State (3, 9):
+Vị trí (3, 9):
+  Đi Lên: [Tường]
+  Đi Phải: [Tường]
+  Đi Xuống: [Tường]
+  Đi Trái: 83.54
+
+State (4, 0):
+Vị trí (4, 0):
+  Đi Lên: [Tường]
+  Đi Phải: 436.32
+  Đi Xuống: 773.68
+  Đi Trái: 468.88
+
+State (4, 1):
+Vị trí (4, 1):
+  Đi Lên: 659.89
+  Đi Phải: [Tường]
+  Đi Xuống: 769.57
+  Đi Trái: 678.87
+
+State (4, 10):
+Vị trí (4, 10):
+  Đi Lên: [Tường]
+  Đi Phải: 97.50
+  Đi Xuống: 97.50
+  Đi Trái: [Tường]
+
+State (4, 11):
+Vị trí (4, 11):
+  Đi Lên: 42.62
+  Đi Phải: 50.00
+  Đi Xuống: 50.00
+  Đi Trái: 42.62
+
+State (4, 12):
+Vị trí (4, 12):
+  Đi Lên: -2.50
+  Đi Phải: [Tường]
+  Đi Xuống: [Tường]
+  Đi Trái: -2.50
+
+State (4, 2):
+Vị trí (4, 2):
+  Đi Lên: 678.90
+  Đi Phải: 757.44
+  Đi Xuống: [Tường]
+  Đi Trái: [Tường]
+
+State (4, 4):
+Vị trí (4, 4):
+  Đi Lên: [Tường]
+  Đi Phải: 286.70
+  Đi Xuống: 234.82
+  Đi Trái: [Tường]
+
+State (4, 5):
+Vị trí (4, 5):
+  Đi Lên: 191.26
+  Đi Phải: [Tường]
+  Đi Xuống: 263.01
+  Đi Trái: [Tường]
+
+State (4, 6):
+Vị trí (4, 6):
+  Đi Lên: 167.54
+  Đi Phải: 260.33
+  Đi Xuống: 198.11
+  Đi Trái: [Tường]
+
+State (4, 7):
+Vị trí (4, 7):
+  Đi Lên: 183.33
+  Đi Phải: [Tường]
+  Đi Xuống: 88.16
+  Đi Trái: [Tường]
+
+State (4, 8):
+Vị trí (4, 8):
+  Đi Lên: 83.51
+  Đi Phải: [Tường]
+  Đi Xuống: [Tường]
+  Đi Trái: [Tường]
+
+State (5, 0):
+Vị trí (5, 0):
+  Đi Lên: [Tường]
+  Đi Phải: 265.33
+  Đi Xuống: [Tường]
+  Đi Trái: 476.11
+
+State (5, 10):
+Vị trí (5, 10):
+  Đi Lên: [Tường]
+  Đi Phải: 50.00
+  Đi Xuống: 50.00
+  Đi Trái: 42.62
+
+State (5, 11):
+Vị trí (5, 11):
+  Đi Lên: -2.50
+  Đi Phải: [Tường]
+  Đi Xuống: [Tường]
+  Đi Trái: -2.50
+
+State (5, 2):
+Vị trí (5, 2):
+  Đi Lên: [Tường]
+  Đi Phải: 744.67
+  Đi Xuống: [Tường]
+  Đi Trái: 667.65
+
+State (5, 4):
+Vị trí (5, 4):
+  Đi Lên: [Tường]
+  Đi Phải: 292.02
+  Đi Xuống: [Tường]
+  Đi Trái: 162.19
+
+State (5, 6):
+Vị trí (5, 6):
+  Đi Lên: [Tường]
+  Đi Phải: 225.69
+  Đi Xuống: [Tường]
+  Đi Trái: 189.22
+
+State (6, 0):
+Vị trí (6, 0):
+  Đi Lên: [Tường]
+  Đi Phải: [Tường]
+  Đi Xuống: [Tường]
+  Đi Trái: 285.50
+
+State (6, 10):
+Vị trí (6, 10):
+  Đi Lên: -2.50
+  Đi Phải: [Tường]
+  Đi Xuống: [Tường]
+  Đi Trái: -2.50
+
+State (6, 12):
+Vị trí (6, 12):
+  Đi Lên: [Tường]
+  Đi Phải: 48.42
+  Đi Xuống: [Tường]
+  Đi Trái: [Tường]
+
+State (6, 2):
+Vị trí (6, 2):
+  Đi Lên: [Tường]
+  Đi Phải: 731.23
+  Đi Xuống: [Tường]
+  Đi Trái: 653.79
+
+State (6, 4):
+Vị trí (6, 4):
+  Đi Lên: [Tường]
+  Đi Phải: 303.80
+  Đi Xuống: [Tường]
+  Đi Trái: 166.70
+
+State (6, 6):
+Vị trí (6, 6):
+  Đi Lên: [Tường]
+  Đi Phải: 185.45
+  Đi Xuống: [Tường]
+  Đi Trái: 163.27
+
+State (6, 8):
+Vị trí (6, 8):
+  Đi Lên: [Tường]
+  Đi Phải: 97.50
+  Đi Xuống: 97.50
+  Đi Trái: [Tường]
+
+State (6, 9):
+Vị trí (6, 9):
+  Đi Lên: 42.62
+  Đi Phải: [Tường]
+  Đi Xuống: 50.00
+  Đi Trái: [Tường]
+
+State (7, 1):
+Vị trí (7, 1):
+  Đi Lên: [Tường]
+  Đi Phải: 801.98
+  Đi Xuống: 592.66
+  Đi Trái: [Tường]
+
+State (7, 12):
+Vị trí (7, 12):
+  Đi Lên: [Tường]
+  Đi Phải: 75.92
+  Đi Xuống: [Tường]
+  Đi Trái: -16.22
+
+State (7, 2):
+Vị trí (7, 2):
+  Đi Lên: 696.29
+  Đi Phải: 717.09
+  Đi Xuống: [Tường]
+  Đi Trái: 641.28
+
+State (7, 4):
+Vị trí (7, 4):
+  Đi Lên: [Tường]
+  Đi Phải: 291.54
+  Đi Xuống: [Tường]
+  Đi Trái: 196.58
+
+State (7, 6):
+Vị trí (7, 6):
+  Đi Lên: [Tường]
+  Đi Phải: 142.62
+  Đi Xuống: [Tường]
+  Đi Trái: 126.02
+
+State (7, 8):
+Vị trí (7, 8):
+  Đi Lên: [Tường]
+  Đi Phải: 50.00
+  Đi Xuống: [Tường]
+  Đi Trái: 42.62
+
+State (8, 0):
+Vị trí (8, 0):
+  Đi Lên: [Tường]
+  Đi Phải: 886.09
+  Đi Xuống: 801.37
+  Đi Trái: [Tường]
+
+State (8, 1):
+Vị trí (8, 1):
+  Đi Lên: 791.79
+  Đi Phải: [Tường]
+  Đi Xuống: 713.73
+  Đi Trái: 704.16
+
+State (8, 10):
+Vị trí (8, 10):
+  Đi Lên: [Tường]
+  Đi Phải: [Tường]
+  Đi Xuống: 109.84
+  Đi Trái: [Tường]
+
+State (8, 11):
+Vị trí (8, 11):
+  Đi Lên: -0.36
+  Đi Phải: 180.28
+  Đi Xuống: 251.90
+  Đi Trái: [Tường]
+
+State (8, 12):
+Vị trí (8, 12):
+  Đi Lên: 8.14
+  Đi Phải: 565.52
+  Đi Xuống: [Tường]
+  Đi Trái: -14.68
+
+State (8, 2):
+Vị trí (8, 2):
+  Đi Lên: 702.20
+  Đi Phải: [Tường]
+  Đi Xuống: [Tường]
+  Đi Trái: 628.57
+
+State (8, 4):
+Vị trí (8, 4):
+  Đi Lên: [Tường]
+  Đi Phải: 284.75
+  Đi Xuống: [Tường]
+  Đi Trái: 187.43
+
+State (8, 6):
+Vị trí (8, 6):
+  Đi Lên: [Tường]
+  Đi Phải: [Tường]
+  Đi Xuống: 97.50
+  Đi Trái: 85.49
+
+State (8, 7):
+Vị trí (8, 7):
+  Đi Lên: 42.62
+  Đi Phải: [Tường]
+  Đi Xuống: 50.00
+  Đi Trái: [Tường]
+
+State (8, 8):
+Vị trí (8, 8):
+  Đi Lên: -2.50
+  Đi Phải: [Tường]
+  Đi Xuống: [Tường]
+  Đi Trái: -2.50
+
+State (9, 0):
+Vị trí (9, 0):
+  Đi Lên: [Tường]
+  Đi Phải: 880.10
+  Đi Xuống: [Tường]
+  Đi Trái: 790.72
+
+State (9, 11):
+Vị trí (9, 11):
+  Đi Lên: [Tường]
+  Đi Phải: [Tường]
+  Đi Xuống: 417.71
+  Đi Trái: 70.15
+
+State (9, 12):
+Vị trí (9, 12):
+  Đi Lên: 162.98
+  Đi Phải: 888.62
+  Đi Xuống: [Tường]
+  Đi Trái: 193.24
+
+State (9, 4):
+Vị trí (9, 4):
+  Đi Lên: [Tường]
+  Đi Phải: 283.97
+  Đi Xuống: [Tường]
+  Đi Trái: 201.38
+

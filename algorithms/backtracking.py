@@ -11,7 +11,7 @@ def backtracking_search(maze, x, y, goal, path, visited, grid_size):
         return True
 
     visited.add((x, y))
-    path.append((x, y))  # Bước đi luôn được thêm vào path
+    path.append((x, y))  
 
     for dx, dy in [(0, 1), (1, 0), (0, -1), (-1, 0)]:
         new_x, new_y = x + dx, y + dy
@@ -19,8 +19,8 @@ def backtracking_search(maze, x, y, goal, path, visited, grid_size):
             if backtracking_search(maze, new_x, new_y, goal, path, visited, grid_size):
                 return True
 
-    # Không xóa bước sai ra khỏi path để giữ lại hành trình sai
     visited.remove((x, y))
+    # path.pop()
     return False
 
 def backtracking_find_path(maze, grid_size):
@@ -34,4 +34,4 @@ def backtracking_find_path(maze, grid_size):
         return None  # Start or goal is blocked
 
     backtracking_search(maze, start[0], start[1], goal, path, visited, grid_size)
-    return path  # Trả về path gồm cả bước đúng và sai
+    return path 
