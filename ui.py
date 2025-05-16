@@ -706,7 +706,7 @@ class GameUI:
         """Show algorithm selection window"""
         algo_window = ctk.CTkToplevel(self.root)
         algo_window.title("Chọn Thuật Toán Tìm Đường")
-        algo_window.geometry("400x500")
+        algo_window.geometry("400x600")
         algo_window.grab_set()
         
         # Content frame
@@ -734,6 +734,11 @@ class GameUI:
                 "name": "Beam Search",
                 "desc": "Tìm đường theo chiều rộng nhưng chỉ giữ số lượng giới hạn các lựa chọn tốt nhất ở mỗi bước",
                 "color": "#705446"
+            },
+            "Backtracking":{
+                "name": "Backtracking",
+                "desc": "Tìm đường đi bằng cách quay lui khi gặp chướng ngại vật",
+                "color": "#81B621"
             },
             "Q-Learning": {
                 "name": "Q-Learning",
@@ -794,6 +799,7 @@ class GameUI:
             "A*": "#FF9800",
             "Beam": "#705446",
             "Partial": "#9C27B0",
+            "Backtracking" : "#81B621",
             "Q-Learning": "#2196F3"
         }.get(algorithm, "#FFFFFF")
         self.update_algorithm_button(algo_name, algo_color)

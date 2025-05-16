@@ -1,41 +1,80 @@
-# Mê Cung Tower Defense
+# BÁO CÁO CUỐI KỲ AI - NHÓM 18
 
-## Giới Thiệu
-Mê Cung Tower Defense là trò chơi chiến thuật, nơi người chơi xây dựng tháp phòng thủ để ngăn kẻ địch vượt qua mê cung. Trò chơi sử dụng các thuật toán tìm đường thông minh và giao diện trực quan.
+## 1. Mục tiêu
+- Phát triển và triển khai các giải thuật tìm đường trong game chiến thuật
+- Nghiên cứu cách áp dụng các loại thuật toán khác nhau trong không gian 2D
+- Hiểu rõ đặc điểm và cách hoạt động của từng nhóm thuật toán
 
-## Cấu Trúc Dự Án
-- **`main.py`**: Điểm khởi đầu của trò chơi.
-- **`game_logic.py`**: Xử lý logic chính, quản lý tháp và kẻ địch.
-- **`ui.py`**: Giao diện người dùng.
-- **`entities.py`**: Định nghĩa kẻ địch và tháp.
-- **`pathfinding.py`**: Thuật toán tìm đường.
+## 2. Nội dung
 
-## Hướng Dẫn Cài Đặt
-1. **Yêu Cầu**:
-   - Python 3.10 hoặc mới hơn.
-   - Thư viện: `customtkinter`, `pygame`, `Pillow`.
-2. **Cài Đặt**:
-   ```bash
-   pip install customtkinter pygame Pillow
-   ```
-3. **Chạy Trò Chơi**:
-   ```bash
-   python main.py
-   ```
+### 2.1. Thuật toán Tìm kiếm không có thông tin (Uninformed Search)
 
-## Tính Năng Chính
-- Thuật toán tìm đường: BFS, DFS, Dijkstra, A*.
-- Giao diện trực quan và hiệu ứng âm thanh sống động.
+#### Thành phần chính của bài toán:
 
-## Cách Chơi
-1. **Mục Tiêu**: Xây dựng các tháp phòng thủ để ngăn chặn kẻ địch vượt qua mê cung và bảo vệ căn cứ của bạn.
-2. **Xây Dựng Tháp**: Chọn vị trí chiến lược để đặt các tháp, mỗi loại tháp có khả năng đặc biệt:
-   - **Shooter Tower**: Tấn công nhanh với sát thương trung bình.
-   - **Freeze Tower**: Làm chậm kẻ địch trong phạm vi.
-   - **Sniper Tower**: Tầm bắn xa với sát thương cao.
-3. **Kẻ Địch**: Đối mặt với nhiều loại kẻ địch:
-   - **Normal**: Tốc độ và máu trung bình.
-   - **Fast**: Tốc độ cao nhưng máu thấp.
-   - **Tank**: Máu cao nhưng di chuyển chậm.
-4. **Chiến Thắng**: Tiêu diệt tất cả kẻ địch trước khi chúng đến căn cứ của bạn.
+#### Breadth-First Search (BFS):
+- Solution: Tìm đường đi ngắn nhất bằng cách khám phá tất cả các nút cùng độ sâu trước
+- Đặc điểm:
+  + Sử dụng queue để lưu trữ các đường đi cần khám phá
+  + Đảm bảo tìm được đường đi ngắn nhất nếu tồn tại
+  + Khám phá đều các hướng không phụ thuộc thông tin heuristic
 
+### 2.2. Thuật toán Tìm kiếm có thông tin (Informed Search)
+
+#### A* Search
+- Thành phần:
+  + Hàm heuristic: Manhattan distance (|x1-x2| + |y1-y2|)
+  + f(n) = g(n) + h(n): tổng chi phí đã đi và ước lượng chi phí còn lại
+- Solution: 
+  + Sử dụng priority queue để luôn xét các nút có f_score thấp nhất trước
+  + Kết hợp thông tin thực tế (chi phí đã đi) và dự đoán (heuristic)
+  + Đảm bảo tìm được đường đi tối ưu nếu heuristic admissible
+
+### 2.3. Thuật toán Tìm kiếm cục bộ (Local Search)
+
+#### Beam Search
+- Thành phần:
+  + Beam width: số lượng đường đi được xét tại mỗi bước
+  + Hàm đánh giá: Manhattan distance đến đích
+- Solution:
+  + Giới hạn không gian tìm kiếm bằng beam width
+  + Chỉ giữ lại k đường đi tốt nhất tại mỗi bước
+  + Tìm kiếm theo chiều rộng có giới hạn
+
+### 2.4. Thuật toán Tìm kiếm ràng buộc (Constraint Search)
+
+#### Backtracking
+- Thành phần:
+  + Ràng buộc: Không đi vào tường, không vượt biên
+  + Không gian tìm kiếm: Cây các trạng thái hợp lệ
+- Solution:
+  + Thử từng hướng đi có thể
+  + Quay lui khi gặp đường cụt
+  + Lưu lại toàn bộ hành trình để phân tích
+
+### 2.5. Thuật toán Học tăng cường (Reinforcement Learning)
+
+#### Q-Learning
+- Thành phần:
+  + Q-table: Lưu giá trị Q(s,a) cho mỗi cặp trạng thái-hành động
+  + Reward function: Phần thưởng cho mỗi hành động
+  + Tham số học: learning rate, discount factor, epsilon
+- Solution:
+  + Học tương tác với môi trường qua nhiều episodes
+  + Cập nhật Q-table dựa trên phương trình Bellman
+  + Cân bằng giữa thăm dò và khai thác qua epsilon-greedy
+
+## 3. Kết luận
+
+### Kết quả đạt được:
+1. **Về mặt thuật toán**:
+   - Triển khai thành công 5 nhóm thuật toán tìm đường khác nhau
+   - Hiểu rõ đặc điểm và phạm vi áp dụng của từng nhóm
+
+2. **Về mặt ứng dụng**:
+   - Tích hợp thành công vào game chiến thuật
+   - Tạo được visualizer để theo dõi quá trình tìm đường
+
+3. **Về mặt học thuật**:
+   - Hiểu sâu về các nhóm thuật toán tìm kiếm khác nhau
+   - Nắm được cách áp dụng machine learning vào bài toán tìm đường
+   - Phân biệt được đặc điểm và ứng dụng của từng nhóm thuật toán

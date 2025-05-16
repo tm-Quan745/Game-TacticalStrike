@@ -11,7 +11,7 @@ import customtkinter as ctk
 from ui import channels, load_sound_effects 
 import math
 from radar_view import RadarView
-import pygame
+import pygame.mixer
 pygame.mixer.init()
 for i in range(pygame.mixer.get_num_channels()):
     pygame.mixer.Channel(i).stop()
@@ -78,27 +78,14 @@ class MazeTowerDefenseGame:
             }
         }
         
-        # Enemy types
-        self.enemy_types = {            "normal": {
+        # Enemy types: chỉ còn 1 loại enemy cơ bản
+        self.enemy_types = {
+            "normal": {
                 "color": "#e67e22",
-                "speed_factor": 1.2,  # Tăng tốc độ cơ bản
-                "health_factor": 1.2,
+                "speed_factor": 1.0,
+                "health_factor": 1.0,
                 "damage": 8,
                 "reward": 12
-            },
-            "fast": {
-                "color": "#e74c3c",
-                "speed_factor": 2.0,  # Tăng tốc độ của fast unit
-                "health_factor": 0.7,
-                "damage": 12,
-                "reward": 18
-            },
-            "tank": {
-                "color": "#7f8c8d",
-                "speed_factor": 0.8,  # Tăng tốc độ của tank unit
-                "health_factor": 3.0,
-                "damage": 15,
-                "reward": 25
             }
         }
         
@@ -510,40 +497,23 @@ class MazeTowerDefenseGame:
         if self.current_wave > 5:  # Từ wave 6 trở đi
             if random.random() < 0.3:  # 30% cơ hội tạo đợt tấn công dày đặc
                 spawn_delay_base *= 0.5  # Giảm một nửa thời gian chờ
-          # Tỉ lệ xuất hiện enemy đặc biệt tăng theo wave
-        tank_chance = min(0.35, 0.15 + self.current_wave * 0.03)
-        fast_chance = min(0.45, 0.25 + self.current_wave * 0.04)
         
         print(f"[Wave {self.current_wave}] Spawning {num_enemies} enemies:")
         print(f"Base Health: {base_health}, Base Speed: {base_speed}, Base Damage: {base_damage}")
-        print(f"Tank chance: {tank_chance:.2%}, Fast chance: {fast_chance:.2%}")
         print(f"Spawn Delay: {spawn_delay_base:.1f}s")  # Log spawn delay
-        
-        print(f"[Wave {self.current_wave}] Spawning {num_enemies} enemies:")
-        print(f"Base Health: {base_health}, Base Speed: {base_speed}, Base Damage: {base_damage}")
-        print(f"Tank chance: {tank_chance:.2%}, Fast chance: {fast_chance:.2%}")
         
         for i in range(num_enemies):
             enemy_type = "normal"
-            if self.current_wave >= 1:  # Bắt đầu xuất hiện enemy đặc biệt từ wave 1
-                r = random.random()
-                if r < tank_chance:
-                    enemy_type = "tank"
-                elif r < (tank_chance + fast_chance):
-                    enemy_type = "fast"
-              # Điều chỉnh chỉ số theo loại enemy
+            # Điều chỉnh chỉ số theo loại enemy
             type_data = self.enemy_types[enemy_type]
             enemy_health = int(base_health * type_data['health_factor'])
             enemy_speed = base_speed * type_data['speed_factor']            # Tính toán damage dựa trên wave, bắt đầu từ mức rất thấp
             base_shot_damage = max(1, int(0.5 + self.current_wave * 0.1))  # Bắt đầu từ 0.5, tăng 0.01 mỗi wave
             enemy_damage = type_data['damage'] + base_damage  # Damage cận chiến
             
-            # Thêm bonus damage và health cho enemy đặc biệt theo wave
-            if enemy_type in ["tank", "fast"]:
-                enemy_health += int(self.current_wave * 10)
-                enemy_damage += int(self.current_wave * 1.5)  # Thêm damage bonus cho enemy mạnh
-                base_shot_damage = int(base_shot_damage * 1.1)  # Enemy đặc biệt gây thêm 10% sát thương đạn
-            self.enemy_counter += 1            # Add damage to type_data
+            # Tất cả enemy đều là "normal", không còn bonus đặc biệt theo loại enemy
+            # self.enemy_counter += 1            # Add damage to type_data
+            self.enemy_counter += 1
             type_data = dict(type_data)  # Create a copy to avoid modifying the original
             type_data['damage'] = enemy_damage
             type_data['shoot_damage'] = base_shot_damage  # Thêm sát thương đạn
