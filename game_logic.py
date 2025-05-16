@@ -11,7 +11,7 @@ import customtkinter as ctk
 from ui import channels, load_sound_effects 
 import math
 from radar_view import RadarView
-import pygame.mixer
+import pygame
 pygame.mixer.init()
 for i in range(pygame.mixer.get_num_channels()):
     pygame.mixer.Channel(i).stop()
@@ -28,7 +28,7 @@ class MazeTowerDefenseGame:
         self.cols = self.grid_size
         self.rows = self.grid_size  # Add this line to fix the error
         self.initial_money = 100  # Add initial money value
-        self.initial_lives = 1000   # Add initial lives value
+        self.initial_lives = 20   # Add initial lives value
         self.maze = []
         self.towers = []
         self.enemies = []
@@ -78,14 +78,27 @@ class MazeTowerDefenseGame:
             }
         }
         
-        # Enemy types: chỉ còn 1 loại enemy cơ bản
-        self.enemy_types = {
-            "normal": {
+        # Enemy types
+        self.enemy_types = {            "normal": {
                 "color": "#e67e22",
-                "speed_factor": 1.0,
-                "health_factor": 1.0,
+                "speed_factor": 1.2,  # Tăng tốc độ cơ bản
+                "health_factor": 1.2,
                 "damage": 8,
                 "reward": 12
+            },
+            "fast": {
+                "color": "#e74c3c",
+                "speed_factor": 2.0,  # Tăng tốc độ của fast unit
+                "health_factor": 0.7,
+                "damage": 12,
+                "reward": 18
+            },
+            "tank": {
+                "color": "#7f8c8d",
+                "speed_factor": 0.8,  # Tăng tốc độ của tank unit
+                "health_factor": 3.0,
+                "damage": 15,
+                "reward": 25
             }
         }
         
