@@ -52,7 +52,7 @@ Xây dựng trò chơi chiến thuật giải trí kết hợp tư duy, giúp ng
 
 
 
-## Các thuật toán áp dụng cho Enemy 
+## 🤖 Các thuật toán áp dụng cho Enemy 
 ### 1. Uniformed Search : BFS
 -	Thuật toán tìm kiếm theo chiều rộng, khám phá đồng thời tất cả các nút ở cùng một độ sâu trước khi đi sâu hơn
 -	Sử dụng cấu trúc dữ liệu hàng đợi (queue) theo nguyên tắc FIFO (First In First Out)
