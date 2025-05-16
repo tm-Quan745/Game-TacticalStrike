@@ -1,4 +1,7 @@
-![Logo](https://raw.githubusercontent.com/tm-Quan745/Game-TacticalStrike/Develop/readme_img/logo.png)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/tm-Quan745/Game-TacticalStrike/Develop/readme_img/logo.png" alt="Logo" width="180"/>
+</p>
+
 
 ## 🎮 Giới thiệu trò chơi Tactical Strike
 Tactical Strike là một trò chơi thuộc thể loại Tower Defense (thủ thành chiến thuật), được phát triển bằng ngôn ngữ Python kết hợp với thư viện đồ họa Pygame và Tkinter. Trò chơi lấy cảm hứng từ các tựa game nổi tiếng như Plants vs. Zombies và Kingdom Rush, nơi người chơi có nhiệm vụ xây dựng các tháp phòng thủ để ngăn chặn từng đợt tấn công của kẻ địch đang tiến về căn cứ.
@@ -8,24 +11,35 @@ Kẻ địch sẽ di chuyển theo các lộ trình cụ thể, và người ch�
 Xây dựng trò chơi chiến thuật giải trí kết hợp tư duy, giúp người chơi vừa chơi vừa học thông qua việc tương tác với các yếu tố chiến thuật và trí tuệ nhân tạo; ứng dụng các thuật toán tìm kiếm trong AI như BFS, A*, Beam Search, Backtracking, Partial Observation, Q-Learning để mô phỏng hành vi di chuyển của kẻ địch.
 ## 🖥 Giao diện phần mềm
 ### Giao diện mở đầu
-![Intro](https://raw.githubusercontent.com/tm-Quan745/Game-TacticalStrike/Develop/readme_img/intro.gif)
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/tm-Quan745/Game-TacticalStrike/Develop/readme_img/intro.gif" alt="Intro" />
+</p>
 
 ### Giao diện chính
 
-![Main Game](https://raw.githubusercontent.com/tm-Quan745/Game-TacticalStrike/Develop/readme_img/main.png)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/tm-Quan745/Game-TacticalStrike/Develop/readme_img/main.png" alt="Main Game" />
+</p>
 
 ### Tính năng
 ### 1. Thay đổi giao diện mê cung
 
-![Maze Change](https://raw.githubusercontent.com/tm-Quan745/Game-TacticalStrike/Develop/readme_img/maze_change.gif)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/tm-Quan745/Game-TacticalStrike/Develop/readme_img/maze_change.gif" alt="Maze Change" />
+</p>
 
 ### 2. Thay đổi đường đi mê cung
 
-![Random](https://raw.githubusercontent.com/tm-Quan745/Game-TacticalStrike/Develop/readme_img/random.gif)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/tm-Quan745/Game-TacticalStrike/Develop/readme_img/random.gif" alt="Random Maze" />
+</p>
 
 ### 3. Xây tháp bắn
 
-![Tower](https://raw.githubusercontent.com/tm-Quan745/Game-TacticalStrike/Develop/readme_img/tower.gif)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/tm-Quan745/Game-TacticalStrike/Develop/readme_img/tower.gif" alt="Tower" />
+</p>
 
 ## Các thuật toán áp dụng cho Enemy 
 ### 1. Uniformed Search : BFS
@@ -33,7 +47,9 @@ Xây dựng trò chơi chiến thuật giải trí kết hợp tư duy, giúp ng
 -	Sử dụng cấu trúc dữ liệu hàng đợi (queue) theo nguyên tắc FIFO (First In First Out)
 -	Đảm bảo tìm được đường đi ngắn nhất trong mê cung không có trọng số
 
-![BFS](https://raw.githubusercontent.com/tm-Quan745/Game-TacticalStrike/Develop/readme_img/bfs.gif)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/tm-Quan745/Game-TacticalStrike/Develop/readme_img/bfs.gif" alt="BFS" />
+</p>
 
 ### 2. Informed Search : A*
 -	Thuật toán tìm đường đi kết hợp giữa Dijkstra và heuristic để tìm đường đi tối ưu
@@ -41,7 +57,9 @@ Xây dựng trò chơi chiến thuật giải trí kết hợp tư duy, giúp ng
 -	Kết hợp chi phí thực tế g(n) và ước lượng chi phí heuristic h(n)
 -	Hiệu quả hơn BFS nhờ khả năng dự đoán hướng đi
 
-![A*](https://raw.githubusercontent.com/tm-Quan745/Game-TacticalStrike/Develop/readme_img/astar.gif)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/tm-Quan745/Game-TacticalStrike/Develop/readme_img/astar.gif" alt="A*" />
+</p>
 
 ### 3. Local Search : Beam Search
 -	Cải tiến của BFS nhằm giảm không gian tìm kiếm
@@ -49,11 +67,16 @@ Xây dựng trò chơi chiến thuật giải trí kết hợp tư duy, giúp ng
 -	Sử dụng heuristic để đánh giá và chọn lọc đường đi tiềm năng
 -	Cân bằng giữa tốc độ và chất lượng giải pháp
 
-![Beam](https://raw.githubusercontent.com/tm-Quan745/Game-TacticalStrike/Develop/readme_img/beam.gif)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/tm-Quan745/Game-TacticalStrike/Develop/readme_img/beam.gif" alt="Beam Search" />
+</p>
 
 ### 4. Partial Observation
 Thuật toán Partial Observation Search là một biến thể của thuật toán A* được thiết kế để hoạt động trong môi trường chỉ được quan sát một phần. Thay vì biết toàn bộ bản đồ ngay từ đầu, agent chỉ có thể "nhìn thấy" một phần môi trường xung quanh nó trong một bán kính nhất định.
-![Partial](https://raw.githubusercontent.com/tm-Quan745/Game-TacticalStrike/Develop/readme_img/partial.gif)
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/tm-Quan745/Game-TacticalStrike/Develop/readme_img/partial.gif" alt="Partial Observation" />
+</p>
 
 
 ### 5. Constraint Satisfaction Problem : Backtracking
@@ -62,13 +85,16 @@ Thuật toán Partial Observation Search là một biến thể của thuật to
 -	Sử dụng heuristic để đánh giá và chọn lọc đường đi tiềm năng
 -	Cân bằng giữa tốc độ và chất lượng giải pháp
 
-![Backtracking](https://raw.githubusercontent.com/tm-Quan745/Game-TacticalStrike/Develop/readme_img/backtracking.gif)
-
+<p align="center">
+  <img src="https://raw.githubusercontent.com/tm-Quan745/Game-TacticalStrike/Develop/readme_img/backtracking.gif" alt="Backtracking" />
+</p>
 
 ### 6. Reinforcement Learning : Q - Learning
 Q-Learning là thuật toán học tăng cường, học từ trải nghiệm để tìm đường đi tối ưu. Thuật toán duy trì một bảng Q-table lưu trữ giá trị của mỗi hành động tại mỗi trạng thái, và cập nhật liên tục các giá trị này dựa trên phần thưởng nhận được.
 
-![QLearning](https://raw.githubusercontent.com/tm-Quan745/Game-TacticalStrike/Develop/readme_img/qlearning.gif)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/tm-Quan745/Game-TacticalStrike/Develop/readme_img/qlearning.gif" alt="Q-Learning" />
+</p>
 
 ## 🌓 So sánh hiệu năng thuật toán
 
